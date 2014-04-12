@@ -90,7 +90,7 @@ From this episode we can infer the following about the software:
   anyway we feel like
 
 Out of this, a finite-state machine can be created. The one that follows
-explains what I understood as possible, but you'll noticed I'm not really good
+explains what I understood as possible, but you'll notice I'm not really good
 at having a consistent notation for events, states, and so on:
 
                     [press any key]
