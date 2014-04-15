@@ -1,0 +1,8 @@
+{application, muumuu, [
+  {description, "Too fat to go to the power plant app"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications, [kernel, stdlib, crypto]},
+  {mod, {muumuu_app, []}},
+  {env, []}
+]}.
