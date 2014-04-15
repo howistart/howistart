@@ -20,9 +20,9 @@ gonna need.
 For rebar, just [download it and follow the
 instructions](https://github.com/rebar/rebar/#building-rebar). Rebar will
 basically generate a self-executable that you can store in your repository, or
-install globally on your computer. This tutorial expects that you're using
-a recent version, older ones execute commands differently and will explode
-in your face.
+install globally on your computer. This tutorial expects that you're using a
+recent version (>= 2.2.0), older ones execute commands differently and will
+explode in your face.
 
 In the case of [relx](http://relx.org/), its presence isn't nearly as pervasive
 for Erlang users, so I tend to still include it in repositories I ship it with
@@ -149,7 +149,7 @@ the following questions and consequences:
    be disabled manually.
 
 The simplest way to write a basic FSM for this one is to use a bunch of function
-calls. Given Erlang has tail call optimization (a call that happens as a return
+calls. Given Erlang has last call optimization (a call that happens as a return
 value does not leave a stack trace, and therefore can happen infinitely many
 times), this is more than adequate.
 
@@ -370,13 +370,15 @@ no_venting() ->
 Here the two last functions implement the special last requirement: after
 denying venting too many times, the valve must be disabled manually.
 
-Here we use a dirty ugly counter for prototyping's sake. In fact I had forgotten
-about that requirement at the time and just bolted it on that way.
+Here we use a dirty ugly counter for prototyping's sake. In fact I had
+forgotten about that requirement at the time and just bolted it on that way.
+The prototype helped figure that requirement out, and the final version can now
+be designed with this in mind.
 
 You can run the code and try it from a shell:
 
 ```
-λ → erlc src/muumuu_fsm.erl&& erl -s muumuu_fsm -noshell
+λ → erlc src/muumuu_fsm.erl && erl -s muumuu_fsm -noshell
 To Start, Press Any Key.
 > .
 Check core temperature? (Y/N)
@@ -396,9 +398,6 @@ and using `-noshell` makes it so that the Erlang VM won't fight with all the
 `io` calls I'm doing for user input ownership.
 
 Sadly, the implementation is kind of ugly and shouldn't go in production.
-Unfortunately, that's what I'm exactly gonna show: how to put that in
-production. As much as I enjoy getting production-grade software out of the
-door, people playing the language will have different requirements.
 
 ![](/static/images/fred/muumuu.gif)
 
@@ -409,8 +408,8 @@ There are two ways to make something reach production: distributing yourself, or
 distributing it as a library other Erlang developers can use.
 
 The latter can be a prerequisite for the former, so we're going to start there.
-By default, everyone using Erlang in the open source community uses OTP
-applications (add a link here).
+By default, everyone using Erlang in the open source community uses [OTP
+applications](http://learnyousomeerlang.com/building-otp-applications).
 
 OTP is kind of often treated as a super advanced topic, so what I'm gonna show
 here is how to take any non-OTP compliant code and turn it into an OTP
@@ -423,9 +422,11 @@ src/
   - muumuu_fsm.erl
 ```
 
-That's all you need if you have rebar installed in your system.
-Add a file in `src/` called `muumuu.app.src`. This file is basically telling
-Erlang (and rebar) what the library is:
+That's all you need in terms of structure if you have rebar installed in your
+system.
+
+Add a file in `src/` called `muumuu.app.src`. This file is basically
+telling Erlang (and rebar) what the library is:
 
 ```erlang
 {application, muumuu, [
@@ -445,14 +446,13 @@ of all applications we depend on. All applications depend on both `kernel` and
 is optional to most apps, but we need it because we use it to seed our
 pseudo-random number generator in `start/0`.
 
-The `env` tuple can contain configuration values (add link here), but we need
-none right now.
+The `env` tuple can contain [configuration
+values](http://erlang.org/doc/man/app.html), but we need none right now.
 
 The other option considered here is `mod`. If your library requires no process
-to be started and you're just shipping code around, you're done.
-
-In our case however, we're starting a process (or we want to), and therefore we
-specify an application module named `muumuu_app`. This module is also in `src/`:
+to be started and you're just shipping code around, you're done. In our case
+however, we're starting a process (or we want to), and therefore we specify an
+application module named `muumuu_app`. This module is also in `src/`:
 
 ```erlang
 -module(muumuu_app).
@@ -460,7 +460,7 @@ specify an application module named `muumuu_app`. This module is also in `src/`:
 -export([start/2, stop/1]).
 
 start(_Type, _Args) ->
-    muumuu:start_link().
+    muumuu_sup:start_link().
 
 stop(_) ->
     ok.
@@ -470,36 +470,95 @@ That module is basically giving callbacks to the Erlang VM. See it a bit as the
 `main` function in C, except you also have to provide a `stop` function that
 will clean up once the process exits. In this case we need nothing.
 
-What's the `muumuu` module? That's the final step to be glued in OTP. OTP has a
-concept called `supervisors` (add link here). Supervisors are in charge of
-checking OTP-compliant processes.
+What's the `muumuu_sup` module? That's the final step to be glued in OTP. OTP
+has a concept called
+[`supervisors`](http://learnyousomeerlang.com/supervisors). Supervisors are in
+charge of checking OTP-compliant processes, to start them, stop them, and
+[provide guarantees regarding their
+state](http://ferd.ca/it-s-about-the-guarantees.html).
 
 Unfortunately, our process isn't OTP-compliant. The guys at Ericsson have long
-ago hit that problem and developed a supervisor bridge, which basically acts as
-a wrapper. This is what we're gonna use. It's a bit more boilerplate, but it's
-much shorter than anything else to help deploy an Erlang app:
+ago hit that problem and developed a [supervisor
+bridge](http://www.erlang.org/doc/man/supervisor_bridge.html), which basically
+acts as a wrapper. This is what we could use if I were not the kind of person
+to want my OTP processes done correctly everywhere.
+
+For the time being, I'll stick with a regular supervisor and will rewrite the
+FSM right after:
 
 ```erlang
--module(muumuu).
--behaviour(supervisor_bridge).
+-module(muumuu_sup).
+-behaviour(supervisor).
 
 -export([start_link/0]).
--export([init/1, terminate/2]).
+-export([init/1]).
 
 start_link() ->
-    supervisor_bridge:start_link(?MODULE, []).
+    supervisor:start_link(?MODULE, []).
 
 init([]) ->
-    Pid = proc_lib:spawn_link(muumuu_fsm, start, []),
-    {ok, Pid, Pid}.
-
-terminate(Reason, Pid) ->
-    unlink(Pid),
-    exit(Pid, Reason).
+    {ok, {{one_for_one, 1, 5},
+          [{console,
+            {muumuu_fsm, start_link, []},
+            permanent, 5000, worker, [muumuu_fsm]}]}}.
 ```
 
-this starts a process that will be in charge of the `muumuu_fsm` and will take
-it down if the `muumuu` application is shutdown.
+This will start `muumuu_fsm` as a permanent worker that can die once every 5
+seconds before the entire system crashes. I don't have a good way to pick
+frequencies, but 1 in 5 seconds sounds like something reasonable for someone to
+mash keys in ways bad enough it causes errors.
+
+So then comes the rewrite from prototype to
+[`gen_fsm`](http://learnyousomeerlang.com/finite-state-machines). This is stuff
+that has been covered in multiple tutorials before, so I'm going to skip most
+of it. You can instead look at books and docs for `gen_fsm`, follow along the
+final module,
+[muumuu_fsm.erl](/static/images/fred/code/library/src/muumuu_fsm.erl),
+and see for yourself.
+
+The biggest changes there, outside of providing the `gen_fsm` callbacks
+required by the OTP behavior, are related to the general information flow.
+Rather than being really direct sequences of functions doing whatever they
+want, the OTP version of the module becomes a lot more declarative.
+
+We no longer enter a state function, ask a question, and wait for the response
+within the same context. The logic has moved so that an event in a state (say
+`first_gas_vent`) causes a question to be asked before transitioning to the
+state that will handle that response.
+
+This doesn't make the code particulalry harder to read, just different:
+
+```erlang
+init([]) ->
+    <<A:32, B:32, C:32>> = crypto:rand_bytes(12),
+    random:seed(A,B,C),
+    {ok, wait_any_key, prompt(wait_any_key, #state{})}.
+
+%% [...]
+
+wait_any_key(_, State) ->
+    {next_state, first_core_check, prompt(first_core_check, State)}.
+
+first_core_check(no, State) ->
+    {next_state, first_gas_vent, prompt(first_gas_vent, State)};
+first_core_check(yes, State) ->
+    show_core_temperature(),
+    {next_state, first_gas_vent, prompt(first_gas_vent, State)}.
+
+first_gas_vent(no, State) ->
+    StateName = venting_prevents_explosions,
+    {next_state, StateName, prompt(StateName, State)};
+first_gas_vent(yes, State) ->
+    show_blow_crops_away(),
+    {next_state, wait_for_command, prompt(wait_for_command, State), 10000}.
+```
+
+This form, along with the experience gained in the prototype, allows for
+simpler state management via the `State` variable, which allows us to be more
+transparent about our usage of venting limits, for example. We also instantly
+benefit from everything OTP gives us in terms of transparency: tracing,
+logging, statistics, and so on (see [the `sys`
+module](http://www.erlang.org/doc/man/sys.html))
 
 With that code in place, we can compile and run the entire application:
 
@@ -507,7 +566,7 @@ With that code in place, we can compile and run the entire application:
 λ → rebar compile
 ==> how-i-start (compile)
 Compiled src/muumuu_app.erl
-Compiled src/muumuu.erl
+Compiled src/muumuu_sup.erl
 Compiled src/muumuu_fsm.erl
 ```
 
@@ -525,8 +584,8 @@ Vent radioactive gas? (Y/N)
 *Gas blows away corn crop*
 ```
 
-That's kind of ugly to run the app, but it's something other people can use to
-pull it within their code.
+That's kind of an ugly command to run the app, but the app is now something
+other people can use to pull it within their own systems.
 
 In order to run it ourselves and actually ship it to customers, we will need to
 build a release.
@@ -546,8 +605,8 @@ ebin/
 
 At the simplest level. A release is basically a group of applications put
 together. For this reason, we'll change the directory structure a bit and add
-`relx` in there (the `relx` adoption is still low enough that it's worth
-shipping with the code):
+the `relx` executable in there (the `relx` adoption is still low enough that
+it's worth shipping with the code):
 
 ```
 apps/
@@ -597,6 +656,7 @@ This will create a release that will only include Erlang source code, but use
 the currently installed Erlang VM to run things. Then the magic happens:
 
 ```
+λ → rebar compile
 ==> muumuu (compile)
 ==> how-i-start (compile)
 Starting relx build process ...
@@ -622,53 +682,8 @@ To Start, Press Any Key.
 
 Pretty cool. This can now be shipped and distributed to people.
 
-How about making it production-ready by moving the prototype to a proper Erlang
-thing?
-
-## Proper OTP
-
-There's already plenty of sources to convert things from non-OTP to OTP, so I'm
-just gonna skip over it. You can still read these sources for more information:
-
-- Source1
-- Source2
-- ...
-- SourceN
-
-And the final result is there
-https://bitbucket.org/ferd/how-i-start/src/c6ec3d134ef63691ec7f7182d7b85067aa7d529f/apps/muumuu/src/muumuu_fsm.erl?at=master
-
-The `muumuu` file itself (the supervisor bridge) gets replaced with a real
-supervisor:
-
-```erlang
--module(muumuu_sup).
--behaviour(supervisor).
-
--export([start_link/0]).
--export([init/1]).
-
-start_link() ->
-    supervisor:start_link(?MODULE, []).
-
-init([]) ->
-    {ok, {{one_for_one, 1, 5},
-          [{console,
-            {muumuu_fsm, start_link, []},
-            permanent, 5000, worker, [muumuu_fms]}]}}.
-```
-
-This basically just starts the shell process but with an actual solid
-supervision strategy (set link here).
-
-Bump the version to `1.0.0` in `muumuu.app.src`, make `muumuu_app` call
-`muumuu_sup` instead of `muumuu`, and bump the release versions in `relx.config`
-to `1.0.0`.
-
-Compiling the application should still work the same.
-
-I want to make the release a bit fancier though. As you've seen earlier, we
-still need to put the `-noshell` by hand, which is totally unacceptable.
+I want to make the release a bit fancier though. As you've just seen, we still
+need to put the `-noshell` by hand, which is totally unacceptable.
 
 To fix this, add a `config/` repository, and I open the `vm.args` file in vim in
 there:
@@ -690,10 +705,11 @@ to give it a name, which will let you connect to it while it's running. In this
 case I could go in and debug the console as the user is maintaining the
 powerplant.
 
-The last arguments (`-smp disable +A 1`) are basically optimizations in the case
-of this very app: they remove Erlang parallelism (I'm running a single process
+The last arguments (`-smp disable +A 1`) are basically optimizations for this
+very app: they remove Erlang parallelism (I'm running a single active process
 for the thing, so why bother?) and removes the number of asynchronous threads
-for IO to a single one (for the same reason -- one process, why bother?).
+for IO to a single one (for the same reason -- one active process, why
+bother?).
 
 In more serious apps, tweaking your VM options can be worthwhile, but outside of
 this text's scope.
@@ -732,7 +748,7 @@ be passed to the node:
           /Users/ferd/.kerl/builds/R16B03-1/release_R16B03-1/lib
 ===> Resolved muumuu-1.0.0
 ===> release successfully created!
-λ → _rel/bin/muumuu
+λ → ./_rel/bin/muumuu
 To Start, Press Any Key.
 > <Tab>
 Check core temperature? (Y/N)
@@ -841,7 +857,8 @@ mock_io() ->
 ```
 
 Ugly. The first step is unstickying the directory for Erlang code. Most modules
-don't require that, only those in Erlang's standard library.
+don't require that, only those in Erlang's standard library. Unstickying allows
+to load new versions of code at run time, which `meck` dynamically does.
 
 Here what I'm doing is mocking the functions `io:format/1`, `io:format/2` and
 `io:get_line/1` to send messages of the form `{in, Msg}` and `{out, Msg}` from
@@ -953,10 +970,11 @@ That one makes an assertion on a regular expression with `re:run/3`, and the
 rest is similar to what we did in `in/1`. We receive the output, match it, and
 that's it.
 
-And there we go, we can run the tests:
+And there we go, we can run the tests (remember, you need to have called
+`rebar get-deps compile` before getting here, so meck is there and built):
 
 ```
-λ how-i-start → master* → rebar ct -r skip_deps=true
+λ → rebar ct -r skip_deps=true
 ==> muumuu (ct)
 DONE.
 Testing apps.muumuu: TEST COMPLETE, 1 ok, 0 failed of 1 test cases

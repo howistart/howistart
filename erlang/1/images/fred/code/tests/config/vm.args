@@ -1,0 +1,10 @@
+# only show the programmed prompt
+-noshell
+
+# for remote access & debugging
+-name nucular_plant@127.0.0.1
+
+# not needed
+-smp disable
++A 1
+
