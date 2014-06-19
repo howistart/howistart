@@ -248,7 +248,7 @@ don't need to edit this either, as it already contains the stuff needed to
 do a bunch of cool things:
 
 ```
-$ rake -T
+$ bundle exec rake -T
 rake build    # Build how_i_start-0.0.1.gem into the pkg directory
 rake install  # Build and install how_i_start-0.0.1.gem into system gems
 rake release  # Create tag v0.0.1 and build and push how_i_start-0.0.1.gem to Ru...
@@ -404,7 +404,7 @@ tests.
 Check to see if it works:
 
 ```
-$ rake
+$ bundle exec rake
 $ echo $?
 0
 $
@@ -434,7 +434,7 @@ The most important part of TDD is to run your tests and watch them fail.
 Here we go!
 
 ```
-$ rake
+$ bundle exec rake
 Run options: --seed 28249
 
 # Running:
@@ -478,7 +478,7 @@ syntax right, if you asked a random Rubyist.
 Now we can run our test again:
 
 ```
-$ rake
+$ bundle exec rake
 Run options: --seed 43182
 
 # Running:
@@ -650,7 +650,7 @@ Let's release this sucker!
 First thing to do is to make sure that packaging it all up works. Let's try:
 
 ```
-$ rake install
+$ bundle exec rake install
 how_i_start 0.0.1 built to pkg/how_i_start-0.0.1.gem.
 how_i_start (0.0.1) installed.
 steve@computer:~/src/how_i_start$ how_i_start
@@ -671,7 +671,7 @@ $ git add lib/how_i_start/version.rb
 $ git commit -m "Bump version for 1.0 release"
 [master 499c1c0] Bump version for 1.0 release
  1 file changed, 1 insertion(+), 1 deletion(-)
-$ rake release
+$ bundle exec rake release
 how_i_start 1.0.0 built to pkg/how_i_start-1.0.0.gem.
 Tagged v1.0.0.
 Pushed git commits and tags.
