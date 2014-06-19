@@ -524,14 +524,183 @@ comment here because docs are really, really important. We don't really have
 much to document, though. We'll just add some comments:
 
 ```
+$ cat lib/how_i_start.rb 
+require "how_i_start/version"
+
+# All code in the gem is namespaced under this module.
+module HowIStart
+
+  # The URL of the article about how I start.
+  Url = "http://howistart.org/posts/ruby/1"
+end
+$ cat lib/how_i_start/version.rb 
+module HowIStart
+
+  # The current version of HowIStart.
+  VERSION = "0.0.1"
+end
+```
+
+Rdoc will parse these comments to generate documentation. You can get more
+complicated than this, but it gives you the general idea. Generating the
+documentation is really easy:
 
 ```
+$ rdoc lib
+Parsing sources...
+100% [ 2/ 2]  lib/how_i_start/version.rb                                        
+
+Generating Darkfish format into /home/steve/src/how_i_start/doc...
+
+  Files:      2
+
+  Classes:    0 (0 undocumented)
+  Modules:    1 (0 undocumented)
+  Constants:  2 (0 undocumented)
+  Attributes: 0 (0 undocumented)
+  Methods:    0 (0 undocumented)
+
+  Total:      3 (0 undocumented)
+  100.00% documented
+
+  Elapsed: 0.0s
+$ firefox doc/index.html
+```
+
+RDoc can tell us if we're missing any documentation. Awesome. I always
+open up the HTML docs in my browser to see if they look okay.
 
 ## Push to GitHub
 
+Rubyists assume you use GitHub. It was originally created by some Rubyists,
+lots of early users were Rubyists. If you like a different code hosting
+platform, sorry. :/. I can only think of one gem that I use that doesn't use
+GitHub.
+
+Make a new GitHub repository with the same name as your gem, and then use
+`git` to push it up:
+
+```
+$ git add .
+$ git commit -m "Initial commit."
+$ git remote add origin git@github.com:steveklabnik/how_i_start.git
+$ git push -u origin master
+```
+
+Refresh at will. Neat!
+
+Oh no! It looks like we didn't write a good README. Let's fix that.
+Here's my diff:
+
+```
+$ git diff --cached
+diff --git a/README.md b/README.md
+index 9c664a3..731d6f7 100644
+--- a/README.md
++++ b/README.md
+@@ -1,24 +1,22 @@
+ # HowIStart
+ 
+-TODO: Write a gem description
++HowIStart is a very simple example gem to show you how I begin a Ruby project.
+ 
+ ## Installation
+ 
+-Add this line to your application's Gemfile:
+-
+-    gem 'how_i_start'
+-
+-And then execute:
+-
+-    $ bundle
+-
+-Or install it yourself as:
++Install it yourself as:
+ 
+     $ gem install how_i_start
+ 
+ ## Usage
+ 
+-TODO: Write usage instructions here
++Just run the executable:
++
++```
++$ how_i_start
++```
++
++And it will point you at the article.
+ 
+ ## Contributing
+```
+
+Let's commit that too:
+
+```
+$ git add README.md
+$ git commit -m "Fix up README."
+$ git push origin master
+```
+
+Much better.
+
 ## Push to RubyGems
 
+Let's release this sucker!
+
+First thing to do is to make sure that packaging it all up works. Let's try:
+
+```
+$ rake install
+how_i_start 0.0.1 built to pkg/how_i_start-0.0.1.gem.
+how_i_start (0.0.1) installed.
+steve@computer:~/src/how_i_start$ how_i_start
+http://howistart.org/posts/ruby/1
+```
+
+Great! It successfully built the package, and our 'binary' works. Since this is
+a feature-complete version of the gem, we should bump the version to 1.0.
+
+```
+$ cat lib/how_i_start/version.rb 
+module HowIStart
+
+  # The current version of HowIStart.
+  VERSION = "1.0.0"
+end
+$ git add lib/how_i_start/version.rb
+$ git commit -m "Bump version for 1.0 release"
+[master 499c1c0] Bump version for 1.0 release
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$ rake release
+how_i_start 1.0.0 built to pkg/how_i_start-1.0.0.gem.
+Tagged v1.0.0.
+Pushed git commits and tags.
+Pushed how_i_start 1.0.0 to rubygems.org.
+```
+
+We just increase the version, commit it, and then run the Rake task that
+Bundler gave us. Since this isn't my first time, it uses my saved credentials,
+but it might ask you for yours.
+
 ## Tweet about it
+
+If a gem gets released in a forest, and nobody is there to hear it, it
+certainly... yeah okay, that didn't really work out. My point is, if you make a
+gem, and nobody knows about it, then it's not very useful. Promotion is hard,
+but there is an answer: Twitter. [Even people that hate Twitter post stuff to
+Twitter](https://twitter.com/peterc/status/475292959337103360). It's just the
+way of the Ruby world.
+
+So do this:
+
+<blockquote class="twitter-tweet" lang="en"><p>I&#39;ve just released &quot;How I Start&quot; 1.0! &#10;&#10;$ gem install how_i_start&#10;&#10;<a href="https://t.co/R5m6ODxOZB">https://t.co/R5m6ODxOZB</a></p>&mdash; Brooklyn.rs (@steveklabnik) <a href="https://twitter.com/steveklabnik/statuses/479671271832444928">June 19, 2014</a></blockquote>
+
+It's worth following a bunch of Ruby people on Twitter. Figure out who makes
+the gems you use, and follow them. Getting to know people is cool, but even if
+you hate that, you can [find out about things before they really
+happen](https://twitter.com/steveklabnik/status/479671346314883073).
+
+Don't be shy, though. You've made something useful! We all want to use it!
 
 ## Conclusion
 
