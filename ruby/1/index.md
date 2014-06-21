@@ -79,7 +79,7 @@ Let's install `ruby-build` so we can build and install a Ruby. I wonder if I
 could have fit more 'install' and 'build' and 'Ruby' into that sentence. Anyway,
 it's simple:
 
-```
+```bash
 git clone https://github.com/sstephenson/ruby-build.git
 cd ruby-build
 ./install.sh
@@ -89,21 +89,21 @@ You may need a `sudo` if you don't have permissions to install to `/usr/local`.
 
 On my machine, `/usr/local/bin` is already in my `$PATH`, so it just works:
 
-```
+```bash
 $ ruby-build --definitions
 ```
 
 This prints out all the different versions of Ruby that `ruby-build` knows
 how to build:
 
-```
+```bash
 $ ruby-build --definitions | wc -l
 109
 ```
 
 Whoah, 109 versions so far!
 
-```
+```bash
 $ ruby-build --definitions | grep "2\.1"
 2.1.0
 2.1.0-dev
@@ -119,7 +119,7 @@ rbx-2.2.1
 Ruby 2.1 is the latest version of Ruby that's out right now, and there's even
 a bunch of them! We want `2.1.1`. Let's build it:
 
-```
+```bash
 ruby-build 2.1.1 ~/.rubies/2.1.1
 ```
 
@@ -132,7 +132,7 @@ keeping it all local to your regular user is nice.
 That should run for a while, and then you have a Ruby installed! Next, `chruby`.
 `chruby` is sweet because you're able to type:
 
-```
+```bash
 $ chruby 2.0.0
 $ ruby -v
 ruby 2.0.0p0 (2014-01-01) [x86_64-linux]
@@ -145,7 +145,7 @@ versions, or when a new Ruby comes out that you'd like to use.
 
 Let's install it:
 
-```
+```bash
 $ wget -O chruby-0.3.8.tar.gz https://github.com/postmodern/chruby/archive/v0.3.8.tar.gz
 $ tar -xzvf chruby-0.3.8.tar.gz
 $ cd chruby-0.3.8/
@@ -156,14 +156,14 @@ You then have to do one more thing: add a line to your shell's profile. I use
 bash, so mine is `~/.bashrc`. If you're cooler than me, you'll probably edit
 `~/.zshrc`. Either way, add this line:
 
-```
+```bash
 source /usr/local/share/chruby/chruby.sh
 ```
 
 This loads up `chruby`, which is basically just a shell script. I happen to
 like automatically switching to a particular Ruby, so I also add
 
-```
+```bash
 chruby 2.1.1
 ```
 
@@ -178,7 +178,7 @@ You're gonna have a bad time. Everything in Ruby world assumes `git`.
 
 Since I'm on a Debian-based Linux, I just type this:
 
-```
+```bash
 $ apt-get install git
 ```
 
@@ -208,7 +208,7 @@ generator to help you make gems. It's going to do 90% of the work for us.
 
 First, we need to install Bundler. It's as easy as
 
-```
+```bash
 $ gem install bundler
 ```
 
@@ -217,7 +217,7 @@ a skeleton for our gem's meat to build on top of.
 
 That sentence was kinda gross. Sorry. Anyway:
 
-```
+```bash
 $ bundle gem how_i_start
       create  how_i_start/Gemfile
       create  how_i_start/Rakefile
@@ -256,7 +256,7 @@ Rake is Ruby's version of the venerable Make tool for building things. We
 don't need to edit this either, as it already contains the stuff needed to
 do a bunch of cool things:
 
-```
+```bash
 $ bundle exec rake -T
 rake build    # Build how_i_start-0.0.1.gem into the pkg directory
 rake install  # Build and install how_i_start-0.0.1.gem into system gems
@@ -299,8 +299,8 @@ decent, but I'm going to edit them, and **then** show you the output.
 
 Okay, I'm done. Here it is. Substitute your own details, unless you're me.
 
-```
-$ cat how_i_start.gemspec 
+```ruby
+$ cat how_i_start.gemspec
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
@@ -359,7 +359,7 @@ you say `require "how_i_start"` in a Ruby program. Very important.
 
 This file contains just a few lines:
 
-```
+```ruby
 $ cat lib/how_i_start/version.rb
 module HowIStart
   VERSION = "0.0.1"
@@ -383,7 +383,7 @@ though I will say that RSpec's mocking framework is kinda nice.
 
 To do this, we need to do a few things:
 
-```
+```bash
 $ mkdir test
 $ touch test/url_test.rb
 ```
@@ -391,8 +391,8 @@ $ touch test/url_test.rb
 This is the `minitest` convention. Test files in `test`, ending with `_test.rb`.
 We'll also need to add a few lines to the `Rakefile`:
 
-```
-$ cat Rakefile 
+```ruby
+$ cat Rakefile
 require "bundler/gem_tasks"
 
 require "rake/testtask"
@@ -412,7 +412,7 @@ tests.
 
 Check to see if it works:
 
-```
+```bash
 $ bundle exec rake
 $ echo $?
 0
@@ -421,7 +421,7 @@ $
 
 Cool. We don't have any tests, so we don't have any output. Let's make a test!
 
-```
+```ruby
 $ cat test/url_test.rb
 require "minitest/autorun"
 
@@ -442,7 +442,7 @@ constant to the URL of this post. Nice and easy.
 The most important part of TDD is to run your tests and watch them fail.
 Here we go!
 
-```
+```bash
 $ bundle exec rake
 Run options: --seed 28249
 
@@ -471,8 +471,8 @@ It doesn't know what our constant is. Perfect.
 
 Let's actually define our constant:
 
-```
-$ cat lib/how_i_start.rb 
+```ruby
+$ cat lib/how_i_start.rb
 require "how_i_start/version"
 
 module HowIStart
@@ -486,7 +486,7 @@ syntax right, if you asked a random Rubyist.
 
 Now we can run our test again:
 
-```
+```bash
 $ bundle exec rake
 Run options: --seed 43182
 
@@ -504,13 +504,13 @@ Finished in 0.001069s, 935.6953 runs/s, 935.6953 assertions/s.
 Just defining a constant isn't quite enough, though. Let's add
 an executable. Executables are stored in `bin`:
 
-```
+```bash
 $ mkdir bin
 ```
 
 Put this in it:
 
-```
+```ruby
 $ cat bin/how_i_start
 #!/usr/bin/env ruby
 
@@ -532,8 +532,8 @@ Use Rdoc. If it doesn't work, use [YARD](http://yardoc.org/). I include this
 comment here because docs are really, really important. We don't really have
 much to document, though. We'll just add some comments:
 
-```
-$ cat lib/how_i_start.rb 
+```ruby
+$ cat lib/how_i_start.rb
 require "how_i_start/version"
 
 # All code in the gem is namespaced under this module.
@@ -542,7 +542,7 @@ module HowIStart
   # The URL of the article about how I start.
   Url = "http://howistart.org/posts/ruby/1"
 end
-$ cat lib/how_i_start/version.rb 
+$ cat lib/how_i_start/version.rb
 module HowIStart
 
   # The current version of HowIStart.
@@ -554,10 +554,10 @@ Rdoc will parse these comments to generate documentation. You can get more
 complicated than this, but it gives you the general idea. Generating the
 documentation is really easy:
 
-```
+```bash
 $ rdoc lib
 Parsing sources...
-100% [ 2/ 2]  lib/how_i_start/version.rb                                        
+100% [ 2/ 2]  lib/how_i_start/version.rb
 
 Generating Darkfish format into /home/steve/src/how_i_start/doc...
 
@@ -589,7 +589,7 @@ GitHub.
 Make a new GitHub repository with the same name as your gem, and then use
 `git` to push it up:
 
-```
+```bash
 $ git add .
 $ git commit -m "Initial commit."
 $ git remote add origin git@github.com:steveklabnik/how_i_start.git
@@ -601,7 +601,7 @@ Refresh at will. Neat!
 Oh no! It looks like we didn't write a good README. Let's fix that.
 Here's my diff:
 
-```
+```bash
 $ git diff --cached
 diff --git a/README.md b/README.md
 index 9c664a3..731d6f7 100644
@@ -609,12 +609,12 @@ index 9c664a3..731d6f7 100644
 +++ b/README.md
 @@ -1,24 +1,22 @@
  # HowIStart
- 
+
 -TODO: Write a gem description
 +HowIStart is a very simple example gem to show you how I begin a Ruby project.
- 
+
  ## Installation
- 
+
 -Add this line to your application's Gemfile:
 -
 -    gem 'how_i_start'
@@ -625,11 +625,11 @@ index 9c664a3..731d6f7 100644
 -
 -Or install it yourself as:
 +Install it yourself as:
- 
+
      $ gem install how_i_start
- 
+
  ## Usage
- 
+
 -TODO: Write usage instructions here
 +Just run the executable:
 +
@@ -638,13 +638,13 @@ index 9c664a3..731d6f7 100644
 +```
 +
 +And it will point you at the article.
- 
+
  ## Contributing
 ```
 
 Let's commit that too:
 
-```
+```bash
 $ git add README.md
 $ git commit -m "Fix up README."
 $ git push origin master
@@ -658,7 +658,7 @@ Let's release this sucker!
 
 First thing to do is to make sure that packaging it all up works. Let's try:
 
-```
+```bash
 $ bundle exec rake install
 how_i_start 0.0.1 built to pkg/how_i_start-0.0.1.gem.
 how_i_start (0.0.1) installed.
@@ -669,8 +669,8 @@ http://howistart.org/posts/ruby/1
 Great! It successfully built the package, and our 'binary' works. Since this is
 a feature-complete version of the gem, we should bump the version to 1.0.
 
-```
-$ cat lib/how_i_start/version.rb 
+```bash
+$ cat lib/how_i_start/version.rb
 module HowIStart
 
   # The current version of HowIStart.
