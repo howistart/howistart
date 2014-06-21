@@ -34,7 +34,7 @@ get ready to write a few things.
 
 ## My Environment
 
-![](/static/images/fred/env.png)
+![](/static/images/erlang/1/env.png)
 
 Despite you being free to develop on whatever you want, I'm gonna go through
 whatever my setup is.
@@ -73,7 +73,7 @@ Our project will be the replication of one of the most well-known software
 programs in popular history, used in life-critical situations: Homer Simpson's
 console in the episode where he's so fat he can work at home.
 
-![](/static/images/fred/homer-computer.gif)
+![](/static/images/erlang/1/homer-computer.gif)
 
 From this episode we can infer the following about the software:
 
@@ -399,7 +399,7 @@ and using `-noshell` makes it so that the Erlang VM won't fight with all the
 
 Sadly, the implementation is kind of ugly and shouldn't go in production.
 
-![](/static/images/fred/muumuu.gif)
+![](/static/images/erlang/1/muumuu.gif)
 
 
 ## Making it a library
@@ -513,7 +513,7 @@ So then comes the rewrite from prototype to
 that has been covered in multiple tutorials before, so I'm going to skip most
 of it. You can instead look at books and docs for `gen_fsm`, follow along the
 final module,
-[muumuu_fsm.erl](/static/images/fred/code/library/src/muumuu_fsm.erl),
+[muumuu_fsm.erl](/static/images/erlang/1/code/library/src/muumuu_fsm.erl),
 and see for yourself.
 
 The biggest changes there, outside of providing the `gen_fsm` callbacks
@@ -590,7 +590,7 @@ other people can use to pull it within their own systems.
 In order to run it ourselves and actually ship it to customers, we will need to
 build a release.
 
-![](/static/images/fred/y-y-y.gif)
+![](/static/images/erlang/1/y-y-y.gif)
 
 
 ## Releases
@@ -993,5 +993,4 @@ release structure to build and ship a release.
 
 After this, I go do something else because I'm pretty much done.
 
-![](/static/images/fred/outdoors.gif)
-
+![](/static/images/erlang/1/outdoors.gif)
