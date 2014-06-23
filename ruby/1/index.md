@@ -18,7 +18,7 @@ There are a few key steps to building a gem. Here's what we need to do:
 Ten easy steps. Let's do this!
 
 Oh, one more comment before I start: I use `vim` to do all of my editing.  Many
-people also use Textmate on Mac OS X, and Sublime is becomining increasingly
+people also use Textmate on Mac OS X, and Sublime is becoming increasingly
 popular. But I like `vim`. I don't use any plugins, either. I do like
 [cntrl-p](https://github.com/kien/ctrlp.vim).  In general, I keep my tooling
 very vanilla; it helps when I pair, when I teach, and probably to tell you the
