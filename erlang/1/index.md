@@ -18,7 +18,7 @@ Along with [installing Erlang](https://www.erlang-solutions.com/downloads)
 gonna need.
 
 For rebar, just [download it and follow the
-instructions](https://github.com/rebar/rebar/#building-rebar). Rebar will
+instructions](https://github.com/rebar/rebar/#downloading). Rebar will
 basically generate a self-executable that you can store in your repository, or
 install globally on your computer. This tutorial expects that you're using a
 recent version (>= 2.2.0), older ones execute commands differently and will
