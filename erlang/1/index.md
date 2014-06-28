@@ -513,7 +513,7 @@ So then comes the rewrite from prototype to
 that has been covered in multiple tutorials before, so I'm going to skip most
 of it. You can instead look at books and docs for `gen_fsm`, follow along the
 final module,
-[muumuu_fsm.erl](/static/images/erlang/1/code/library/src/muumuu_fsm.erl),
+[muumuu_fsm.erl](https://github.com/ferd/howistart-erlang1-code/blob/master/library/src/muumuu_fsm.erl),
 and see for yourself.
 
 The biggest changes there, outside of providing the `gen_fsm` callbacks
