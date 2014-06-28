@@ -991,6 +991,6 @@ In practice, it will often make sense to develop all the applications
 independently, running their own tests, and only later pull them all in a
 release structure to build and ship a release.
 
-After this, I go do something else because I'm pretty much done.
+After this, I go do something else because I'm pretty much done. You can see all the [code here](https://github.com/ferd/howistart-erlang1-code).
 
 ![](/static/images/erlang/1/outdoors.gif)
