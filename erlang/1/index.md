@@ -675,7 +675,7 @@ release successfully created!
 And a release is born! To run it:
 
 ```
-λ → ./_rel/bin/muumuu -noshell
+λ → ./_rel/muumuu/bin/muumuu -noshell
 To Start, Press Any Key.
 >
 ```
@@ -748,7 +748,7 @@ be passed to the node:
           /Users/ferd/.kerl/builds/R16B03-1/release_R16B03-1/lib
 ===> Resolved muumuu-1.0.0
 ===> release successfully created!
-λ → ./_rel/bin/muumuu
+λ → ./_rel/muumuu/bin/muumuu
 To Start, Press Any Key.
 > <Tab>
 Check core temperature? (Y/N)
