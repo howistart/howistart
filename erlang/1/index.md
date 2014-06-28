@@ -805,8 +805,8 @@ Adding `meck` can be done by declaring `rebar.config` dependencies:
 ```
 
 Rebar pulls stuff from github, so at the very least, stick a tag or a commit
-hash in there, and not a branch that can be mutable. Call in `rebar get-deps
-compile` and it will be available for tests.
+hash in there, and not a branch that can be mutable. Call in `rebar prepare-deps`
+and it will be available for tests.
 
 Now back to `muumuu_SUITE`. Time to set up the state:
 
@@ -971,7 +971,7 @@ rest is similar to what we did in `in/1`. We receive the output, match it, and
 that's it.
 
 And there we go, we can run the tests (remember, you need to have called
-`rebar get-deps compile` before getting here, so meck is there and built):
+`rebar prepare-deps` before getting here, so meck is there and built):
 
 ```
 λ → rebar ct -r skip_deps=true
