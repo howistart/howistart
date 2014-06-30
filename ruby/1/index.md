@@ -5,8 +5,8 @@ Hi there! I'm Steve. *waves*. Let's build a Ruby gem together!
 There are a few key steps to building a gem. Here's what we need to do:
 
 1. Figure out what our gem needs to do.
-2. Install Ruby
-3. Install git
+2. Install git
+3. Install Ruby
 4. Generate the skeleton
 5. Write some tests
 6. Implement the code
@@ -57,6 +57,24 @@ Sorry about that! Maybe try the extension convention for names, and call yours
 `how_i_start-jonathan`. Of course, only do that if your name is Jonathan, or
 he'll be really disappointed when he reads this article. I've got your back,
 Jonathan!
+
+## Install git
+
+Rubyists use `git` to manage versions. If you don't like it, well... sorry.
+You're gonna have a bad time. Everything in Ruby world assumes `git`.
+
+Since I'm on a Debian-based Linux, I just type this:
+
+```bash
+$ apt-get install git
+```
+
+Done. This is probably the easiest step in the whole thing. Well, maybe not.
+But one command is pretty easy.
+
+You can't skip this step. Later, our tools will assume that we have `git`
+installed. It's a bit fascist, I'll admit, but at least the trains run on time.
+:[
 
 ## Install Ruby
 
@@ -170,25 +188,6 @@ chruby 2.1.1
 This means that I'll always have 2.1.1 right at my fingertips. Of course, given
 that it's a shell script, this is also how you use `chruby`. Just type the
 version after the name, and you're good to go. Easy peasy.
-
-## Install git
-
-Rubyists use `git` to manage versions. If you don't like it, well... sorry.
-You're gonna have a bad time. Everything in Ruby world assumes `git`.
-
-Since I'm on a Debian-based Linux, I just type this:
-
-```bash
-$ apt-get install git
-```
-
-Done. This is probably the easiest step in the whole thing. Well, maybe not.
-But one command is pretty easy.
-
-You can't skip this step. Later, our tools will assume that we have `git`
-installed. It's a bit fascist, I'll admit, but at least the trains run on time.
-:[
-
 
 That's it for tooling! We're all good to go. Now, let's dig in to the
 gem-building specific stuff.
