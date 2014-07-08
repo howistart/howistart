@@ -608,3 +608,7 @@ We welcome you to explore our [website](http://elixir-lang.org) and read our Get
 Finally, huge thanks to [Augie De Blieck Jr.](http://twitter.com/augiedb) for the drawings in this tutorial. You can read more about his contributions to the Elixir Community on his blog [Various and Sundry](http://www.variousandsundry.com/cs).
 
 See you around!
+
+<link href="/static/css/github.css" rel="stylesheet">
+<script src="/static/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
