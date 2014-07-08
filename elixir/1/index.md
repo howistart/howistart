@@ -5,11 +5,11 @@ Portal
 
 In order to teleport, the player uses the Portal gun to shoot doors onto flat planes, like a floor or a wall, entering one of those doors teleports you to the other:
 
-![Portal transfer](/static/images/elixir/1/portal-drop.jpeg)
+![](/static/images/elixir/1/portal-drop.jpeg)
 
 In this guide we will use the [Elixir programming language](http://elixir-lang.org/getting_started/1.html) to build portals by shooting doors of different colors and transferring data between them! We will even learn how we can distribute doors across different machines in our network:
 
-![Data transfer portal](/static/images/elixir/1/portal-list.jpeg)
+![](/static/images/elixir/1/portal-list.jpeg)
 
 Here is what we will learn:
 
