@@ -164,7 +164,7 @@ iex> [0|list]
 
 Elixir data structures are immutable. In the examples above, we never mutated the list. We can break a list apart or add new elements to the head, but the original list is never modified.
 
-That said, when we need to keep some sort of state, like the data transfering through a portal, we must use an abstraction that stores this state for us. One such abstraction in Elixir is called an agent. To use agents, we need to briefly talk about anonymous functions before:
+That said, when we need to keep some sort of state, like the data transfering through a portal, we must use an abstraction that stores this state for us. One such abstraction in Elixir is called an agent. To use agents, we need to briefly talk about anonymous functions first:
 
 ```iex
 iex> adder = fn a, b -> a + b end
