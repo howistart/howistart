@@ -3,7 +3,7 @@ Portal
 
 [Portal is a game](http://en.wikipedia.org/wiki/Portal_(video_game)) that consists of a series of puzzles that must be solved by teleporting the player's character and simple objects from one place to another.
 
-In order to teleport, the player uses the Portal gun to shoot doors onto flat planes, like a floor or a wall, entering one of those doors teleports you to the other:
+In order to teleport, the player uses the Portal gun to shoot doors onto flat planes, like a floor or a wall. Entering one of those doors teleports you to the other:
 
 ![](/static/images/elixir/1/portal-drop.jpeg)
 
@@ -164,7 +164,7 @@ iex> [0|list]
 
 Elixir data structures are immutable. In the examples above, we never mutated the list. We can break a list apart or add new elements to the head, but the original list is never modified.
 
-That said, when we need to keep some sort of state, like the data transfering through a portal, we must use an abstraction that stores this state for us. One such abstraction in Elixir is called an agent. To use agents, we need to briefly talk about anonymous functions first:
+That said, when we need to keep some sort of state, like the data transfering through a portal, we must use an abstraction that stores this state for us. One such abstraction in Elixir is called an agent. Before we use agents, we need to briefly talk about anonymous functions:
 
 ```iex
 iex> adder = fn a, b -> a + b end
@@ -173,7 +173,7 @@ iex> adder.(1, 2)
 3
 ```
 
-A anonymous function is delimited by the words `fn` and `end` and an arrow `->` is used to separate the arguments from the anonymous function body. We use anonymous functions to initialize, get and update the agent state:
+An anonymous function is delimited by the words `fn` and `end` and an arrow `->` is used to separate the arguments from the anonymous function body. We use anonymous functions to initialize, get and update the agent state:
 
 ```iex
 iex> {:ok, agent} = Agent.start_link(fn -> [] end)
@@ -192,7 +192,7 @@ In the example above, we created a new agent, passing a function that returns th
 
 Curly brackets in Elixir specify a tuple; the tuple above contains the atom `:ok` and a process identifier (PID). We use atoms in Elixir as tags. In the example above, we are tagging the agent as successfully started.
 
-The `#PID<...>` is a process identifier for the agent. When we say processes in Elixir, we don't mean Operating System processes, but rather Elixir Processes, which are light-weight and isolated, allowing us to run hundreds of thousands of them on the same machine.
+The `#PID<...>` is a process identifier for the agent. When we say processes in Elixir, we don't mean Operating System processes, but rather Elixir Processes, which are lightweight and isolated, allowing us to run hundreds of thousands of them on the same machine.
 
 We store the agent's PID in the `agent` variable, which allows us to send messages to get and update the agent's state.
 
@@ -270,7 +270,7 @@ iex> h Portal.Door.start_link
 
 ## Portal transfers
 
-Our portal doors are ready so it is time to start working on portal transfers! In order to store the portal data, we are going to create a struct named `Portal`. Let's give structs a try on IEx before going ahead:
+Our portal doors are ready so it is time to start working on portal transfers! In order to store the portal data, we are going to create a struct named `Portal`. Let's give structs a try in IEx before moving forward:
 
 ```iex
 iex> defmodule User do
@@ -322,7 +322,7 @@ def push_right(portal) do
 end
 ```
 
-We have defined our `Portal` struct and a `Portal.transfer/3` function (the `/3` indicates it expects three arguments). Let's give this transfer a try. Start another shell with `iex -S mix` so our changes are compiled and type:
+We have defined our `Portal` struct and a `Portal.transfer/3` function (the `/3` indicates the function expects three arguments). Let's give this transfer a try. Start another shell with `iex -S mix` so our changes are compiled and type:
 
 ```iex
 # Start doors
@@ -362,7 +362,7 @@ We already know that data can be printed in `iex`. After all, when we type `1 + 
 
 Yes, we can! Elixir provides protocols, which allows behaviour to be extended and implemented for any data type, like our `Portal` struct, at any time.
 
-For example, every time something is printed on our `iex` terminal, Elixir uses something called the `Inspect` protocol. Since protocols can be extended at any time, by any data type, it means we can implement it for `Portal` too. Open up `lib/portal.ex` and, at the end of the file, outside the `Portal` module, add the following:
+For example, every time something is printed in our `iex` terminal, Elixir uses something called the `Inspect` protocol. Since protocols can be extended at any time, by any data type, it means we can implement it for `Portal` too. Open up `lib/portal.ex` and, at the end of the file, outside the `Portal` module, add the following:
 
 ```elixir
 defimpl Inspect, for: Portal do
@@ -587,7 +587,7 @@ iex> Portal.push_right(portal)
 
 ```
 
-Awesome. We have distributed transfers working on our code base without changing a single line of code!
+Awesome. We have distributed transfers working in our code base without changing a single line of code!
 
 ## Wrapping up
 
