@@ -270,7 +270,7 @@ release our gem. We'll talk more about all this later.
 ### LICENSE.txt
 
 Rubyists almost exclusively love the MIT license, because it makes making money
-really, really easy. I say all kinds of controverial political things on
+really, really easy. I say all kinds of controversial political things on
 Twitter, and everybody shrugs. As soon as I suggest that I *might* use the GPL,
 people lose their cool.
 
