@@ -548,7 +548,7 @@ You can see this `iex` terminal is different from the previous ones. Now, we can
 In the `iex` session named `room1`, let's shoot a `:blue` door:
 
 ```iex
-iex> Portal.shoot(:blue)
+iex(room1@COMPUTER-NAME)> Portal.shoot(:blue)
 {:ok, #PID<0.65.0>}
 ```
 
@@ -558,28 +558,28 @@ Let's start another `iex` session named `room2`:
 
 > Note: the cookie has to be the same on both computers in order for the two Elixir nodes to be able to communicate with each other.
 
-The Agent API out of the box allows us to do cross-node requests. All we need to do is to pass the node name where the named agent we want to reach is running when invoking the `Portal.Door` functions. For example, let's reach the blue door in room1:
+The Agent API out of the box allows us to do cross-node requests. All we need to do is to pass the node name where the named agent we want to reach is running when invoking the `Portal.Door` functions. For example, let's reach the blue door from `room2`:
 
 ```iex
-iex> Portal.Door.get({:blue, :"room1@COMPUTER-NAME"})
+iex(room2@COMPUTER-NAME)> Portal.Door.get({:blue, :"room1@COMPUTER-NAME"})
 []
 ```
 
-Excellent! This means we can have distributed transfer by simply using node names. Still on `room2`, let's try:
+This means we can have distributed transfer by simply using node names. Still on `room2`, let's try:
 
 ```iex
-iex> Portal.shoot(:orange)
+iex(room2@COMPUTER-NAME)> Portal.shoot(:orange)
 {:ok, #PID<0.71.0>}
-iex> orange = {:orange, :"room2@COMPUTER-NAME"}
+iex(room2@COMPUTER-NAME)> orange = {:orange, :"room2@COMPUTER-NAME"}
 {:orange, :"room2@COMPUTER-NAME"}
-iex> blue = {:blue, :"room1@COMPUTER-NAME"}
+iex(room2@COMPUTER-NAME)> blue = {:blue, :"room1@COMPUTER-NAME"}
 {:blue, :"room1@COMPUTER-NAME"}
-iex> portal = Portal.transfer(orange, blue, [1, 2, 3, 4])
+iex(room2@COMPUTER-NAME)> portal = Portal.transfer(orange, blue, [1, 2, 3, 4])
 #Portal<
   {:orange, :room2@COMPUTER-NAME} <=> {:blue, :room1@COMPUTER-NAME}
           [1, 2, 3, 4] <=> []
 >
-iex> Portal.push_right(portal)
+iex(room2@COMPUTER-NAME)> Portal.push_right(portal)
 #Portal<
   {:orange, :room2@COMPUTER-NAME} <=> {:blue, :room1@COMPUTER-NAME}
              [1, 2, 3] <=> [4]
@@ -588,6 +588,21 @@ iex> Portal.push_right(portal)
 ```
 
 Awesome. We have distributed transfers working in our code base without changing a single line of code!
+
+Even though `room2` is coordinating the transfer, we can still observe the transfer from `room1`:
+
+```iex
+iex(room1@COMPUTER-NAME)> orange = {:orange, :"room2@COMPUTER-NAME"}
+{:orange, :"room2@COMPUTER-NAME"}
+iex(room1@COMPUTER-NAME)> blue = {:blue, :"room1@COMPUTER-NAME"}
+{:blue, :"room1@COMPUTER-NAME"}
+iex(room1@COMPUTER-NAME)> Portal.Door.get(orange)
+[1, 2, 3]
+iex(room1@COMPUTER-NAME)> Portal.Door.get(blue)
+[4]
+```
+
+Our distributed portal transfer works because the doors are just processes and accessing/pushing the data through doors is done by sending messages to those processes via the Agent API. We say sending a message in Elixir is location transparent: we can send messages to any PID regardless if it is in the same node as the sender or in different nodes of the same network.
 
 ## Wrapping up
 
