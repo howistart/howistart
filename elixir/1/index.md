@@ -417,6 +417,9 @@ iex> Portal.Door.start_link(:blue)
 {:ok, #PID<0.61.0>}
 iex> portal = Portal.transfer(:orange, :blue, [1, 2, 3])
 
+# First unlink the door from the shell to avoid the shell from crashing
+iex> Process.unlink(Process.whereis(:blue))
+true
 # Send a shutdown exit signal to the blue agent
 iex> Process.exit(Process.whereis(:blue), :shutdown)
 true
@@ -518,6 +521,8 @@ iex> Portal.push_right(portal)
 And what happens if we stop the `:blue` agent now?
 
 ```iex
+iex> Process.unlink(Process.whereis(:blue))
+true
 iex> Process.exit(Process.whereis(:blue), :shutdown)
 true
 iex> Portal.push_right(portal)
