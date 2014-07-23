@@ -387,7 +387,7 @@ $ mkdir test
 $ touch test/url_test.rb
 ```
 
-This is the `minitest` convention. Test files in `test`, ending with `_test.rb`.
+This is the `minitest` convention. Test files are placed in `test` folder, ending with `_test.rb`.
 We'll also need to add a few lines to the `Rakefile`:
 
 ```ruby
@@ -481,7 +481,7 @@ end
 
 Note that that's indented by two spaces, no tabs. Frankly, indenting your code
 with two spaces and no tabs is more important than getting the rest of the
-syntax right, if you asked a random Rubyist.
+syntax right, if you ask a random Rubyist.
 
 Now we can run our test again:
 
