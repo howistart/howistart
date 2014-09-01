@@ -278,7 +278,7 @@ Now let's wire that function up to a request handler.
 
 ```go
 http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
-    city := strings.SplitN(r.URL.Path, "/", 2)[1]
+    city := strings.SplitN(r.URL.Path, "/", 3)[2]
 
     data, err := query(city)
     if err != nil {
