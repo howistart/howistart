@@ -41,6 +41,14 @@ $ go env | grep GOPATH
 GOPATH="/Users/peter"
 ```
 
+You may also want to add the `bin` directory to your `PATH`, this will let you
+run your compiled binaries more easily:
+
+```
+$ echo 'export PATH=$PATH:$GOPATH/bin' >> $HOME/.profile
+$ source $HOME/.profile
+```
+
 There are a lot of editors and plugins available for Go.
 I'm personally a huge fan of Sublime Text and the excellent [GoSublime](https://github.com/DisposaBoy/GoSublime) plugin.
 But the language is straightforward enough, especially for a small project, that a plain text editor is more than sufficient.
@@ -81,9 +89,12 @@ It'll produce a binary with the same name as the directory.
 
 ```
 $ go build
-$ ./hello
+$ hello
 hello!
 ```
+
+Note that if you didn't add the Go `bin` directory to your path (see above)
+you'll have to run the program by doing something like `$HOME/bin/hello`.
 
 Easy!
 Even after several years of writing Go, I still start all of my new projects like this.
@@ -151,7 +162,7 @@ Compile and run just as before.
 
 ```
 $ go build
-./hello
+$ hello
 ```
 
 And in another terminal, or your browser, make an HTTP request.
@@ -365,7 +376,7 @@ Build and run it, same as before.
 
 ```
 $ go build
-$ ./hello
+$ hello
 ```
 
 ```
@@ -541,7 +552,7 @@ Compile, run, and GET, just as before.
 In addition to the JSON response, you'll see some output in your server logs.
 
 ```
-$ ./hello
+$ hello
 2015/01/01 13:14:15 openWeatherMap: tokyo: 295.46
 2015/01/01 13:14:16 weatherUnderground: tokyo: 273.15
 ```
