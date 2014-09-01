@@ -1,4 +1,4 @@
-Go is a lovely little proramming language
+Go is a lovely little programming language
 designed by [smart people you can trust](http://en.wikipedia.org/wiki/Go_(programming_language)#History)
 and continuously improved by [a large and growing open-source community](https://groups.google.com/forum/#!forum/golang-nuts).
 
@@ -72,7 +72,7 @@ Create `main.go`, which will be our absolute-minimum Go program.
 package main
 
 func main() {
-	println("hello!")
+    println("hello!")
 }
 ```
 
@@ -109,12 +109,12 @@ package main
 import "net/http"
 
 func main() {
-	http.HandleFunc("/", hello)
-	http.ListenAndServe(":8080", nil)
+    http.HandleFunc("/", hello)
+    http.ListenAndServe(":8080", nil)
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello!"))
+    w.Write([]byte("hello!"))
 }
 ```
 
@@ -141,7 +141,7 @@ Since http.ResponseWriter.Write takes the more general `[]byte`, or byte-slice, 
 
 ```go
 func hello(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello!"))
+    w.Write([]byte("hello!"))
 }
 ```
 
@@ -179,26 +179,26 @@ It returns responses like this (partially redacted):
 
 ```json
 {
-	"name": "Tokyo",
-	"coord": {
-		"lon": 139.69,
-		"lat": 35.69
-	},
-	"weather": [
-		{
-			"id": 803,
-			"main": "Clouds",
-			"description": "broken clouds",
-			"icon": "04n"
-		}
-	],
-	"main": {
-		"temp": 296.69,
-		"pressure": 1014,
-		"humidity": 83,
-		"temp_min": 295.37,
-		"temp_max": 298.15
-	}
+    "name": "Tokyo",
+    "coord": {
+        "lon": 139.69,
+        "lat": 35.69
+    },
+    "weather": [
+        {
+            "id": 803,
+            "main": "Clouds",
+            "description": "broken clouds",
+            "icon": "04n"
+        }
+    ],
+    "main": {
+        "temp": 296.69,
+        "pressure": 1014,
+        "humidity": 83,
+        "temp_min": 295.37,
+        "temp_max": 298.15
+    }
 }
 ```
 
@@ -209,10 +209,10 @@ We'll define a struct to represent the data we need returned by the weather API.
 
 ```go
 type weatherData struct {
-	Name string `json:"name"`
-	Main struct {
-		Kelvin float64 `json:"temp"`
-	} `json:"main"`
+    Name string `json:"name"`
+    Main struct {
+        Kelvin float64 `json:"temp"`
+    } `json:"main"`
 }
 ```
 
@@ -233,20 +233,20 @@ Let's write a function to do that.
 
 ```go
 func query(city string) (weatherData, error) {
-	resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
-	if err != nil {
-		return weatherData{}, err
-	}
+    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
+    if err != nil {
+        return weatherData{}, err
+    }
 
-	defer resp.Body.Close()
+    defer resp.Body.Close()
 
-	var d weatherData
+    var d weatherData
 
-	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		return weatherData{}, err
-	}
+    if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
+        return weatherData{}, err
+    }
 
-	return d, nil
+    return d, nil
 }
 ```
 
@@ -278,16 +278,16 @@ Now let's wire that function up to a request handler.
 
 ```go
 http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
-	city := strings.SplitN(r.URL.Path, "/", 2)[1]
+    city := strings.SplitN(r.URL.Path, "/", 2)[1]
 
-	data, err := query(city)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    data, err := query(city)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(data)
+    w.Header().Set("Content-Type", "application/json; charset=utf-8")
+    json.NewEncoder(w).Encode(data)
 })
 ```
 
@@ -308,56 +308,56 @@ If we move the "hello, world" handler to `/hello`, and make the necessary import
 package main
 
 import (
-	"encoding/json"
-	"net/http"
-	"strings"
+    "encoding/json"
+    "net/http"
+    "strings"
 )
 
 func main() {
-	http.HandleFunc("/hello", hello)
+    http.HandleFunc("/hello", hello)
 
-	http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
-		city := strings.SplitN(r.URL.Path, "/", 3)[2]
+    http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
+        city := strings.SplitN(r.URL.Path, "/", 3)[2]
 
-		data, err := query(city)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+        data, err := query(city)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(data)
-	})
+        w.Header().Set("Content-Type", "application/json; charset=utf-8")
+        json.NewEncoder(w).Encode(data)
+    })
 
-	http.ListenAndServe(":8080", nil)
+    http.ListenAndServe(":8080", nil)
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello!"))
+    w.Write([]byte("hello!"))
 }
 
 func query(city string) (weatherData, error) {
-	resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
-	if err != nil {
-		return weatherData{}, err
-	}
+    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
+    if err != nil {
+        return weatherData{}, err
+    }
 
-	defer resp.Body.Close()
+    defer resp.Body.Close()
 
-	var d weatherData
+    var d weatherData
 
-	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		return weatherData{}, err
-	}
+    if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
+        return weatherData{}, err
+    }
 
-	return d, nil
+    return d, nil
 }
 
 type weatherData struct {
-	Name string `json:"name"`
-	Main struct {
-		Kelvin float64 `json:"temp"`
-	} `json:"main"`
+    Name string `json:"name"`
+    Main struct {
+        Kelvin float64 `json:"temp"`
+    } `json:"main"`
 }
 ```
 
@@ -385,7 +385,7 @@ Since we want the same behavior from all of our weather APIs, it makes sense to 
 
 ```go
 type weatherProvider interface {
-	temperature(city string) (float64, error) // in Kelvin, naturally
+    temperature(city string) (float64, error) // in Kelvin, naturally
 }
 ```
 
@@ -397,25 +397,25 @@ And we'll add a simple line of logging, so we can see what's happening.
 type openWeatherMap struct{}
 
 func (w openWeatherMap) temperature(city string) (float64, error) {
-	resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
-	if err != nil {
-		return 0, err
-	}
+    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
+    if err != nil {
+        return 0, err
+    }
 
-	defer resp.Body.Close()
+    defer resp.Body.Close()
 
-	var d struct {
-		Main struct {
-			Kelvin float64 `json:"temp"`
-		} `json:"main"`
-	}
+    var d struct {
+        Main struct {
+            Kelvin float64 `json:"temp"`
+        } `json:"main"`
+    }
 
-	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		return 0, err
-	}
+    if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
+        return 0, err
+    }
 
-	log.Printf("openWeatherMap: %s: %.2f", city, d.Main.Kelvin)
-	return d.Main.Kelvin, nil
+    log.Printf("openWeatherMap: %s: %.2f", city, d.Main.Kelvin)
+    return d.Main.Kelvin, nil
 }
 ```
 
@@ -433,30 +433,30 @@ We're skipping some important logic to handle ambiguous city names for the purpo
 
 ```go
 type weatherUnderground struct {
-	apiKey string
+    apiKey string
 }
 
 func (w weatherUnderground) temperature(city string) (float64, error) {
-	resp, err := http.Get("http://api.wunderground.com/api/" + w.apiKey + "/conditions/q/" + city + ".json")
-	if err != nil {
-		return 0, err
-	}
+    resp, err := http.Get("http://api.wunderground.com/api/" + w.apiKey + "/conditions/q/" + city + ".json")
+    if err != nil {
+        return 0, err
+    }
 
-	defer resp.Body.Close()
+    defer resp.Body.Close()
 
-	var d struct {
-		Observation struct {
-			Celsius float64 `json:"temp_c"`
-		} `json:"current_observation"`
-	}
+    var d struct {
+        Observation struct {
+            Celsius float64 `json:"temp_c"`
+        } `json:"current_observation"`
+    }
 
-	if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
-		return 0, err
-	}
+    if err := json.NewDecoder(resp.Body).Decode(&d); err != nil {
+        return 0, err
+    }
 
-	kelvin := d.Observation.Celsius + 273.15
-	log.Printf("weatherUnderground: %s: %.2f", city, kelvin)
-	return kelvin, nil
+    kelvin := d.Observation.Celsius + 273.15
+    log.Printf("weatherUnderground: %s: %.2f", city, kelvin)
+    return kelvin, nil
 }
 ```
 
@@ -465,18 +465,18 @@ For simplicity, if we encounter any errors, we'll just give up.
 
 ```go
 func temperature(city string, providers ...weatherProvider) (float64, error) {
-	sum := 0.0
+    sum := 0.0
 
-	for _, provider := range providers {
-		k, err := provider.temperature(city)
-		if err != nil {
-			return 0, err
-		}
+    for _, provider := range providers {
+        k, err := provider.temperature(city)
+        if err != nil {
+            return 0, err
+        }
 
-		sum += k
-	}
+        sum += k
+    }
 
-	return sum / float64(len(providers)), nil
+    return sum / float64(len(providers)), nil
 }
 ```
 
@@ -488,18 +488,18 @@ we can implement a meta-weatherProvider, comprised of other weatherProviders.
 type multiWeatherProvider []weatherProvider
 
 func (w multiWeatherProvider) temperature(city string) (float64, error) {
-	sum := 0.0
+    sum := 0.0
 
-	for _, provider := range w {
-		k, err := provider.temperature(city)
-		if err != nil {
-			return 0, err
-		}
+    for _, provider := range w {
+        k, err := provider.temperature(city)
+        if err != nil {
+            return 0, err
+        }
 
-		sum += k
-	}
+        sum += k
+    }
 
-	return sum / float64(len(w)), nil
+    return sum / float64(len(w)), nil
 }
 ```
 
@@ -510,30 +510,30 @@ Now, we can wire that up to our HTTP server, very similar to before.
 
 ```go
 func main() {
-	mw := multiWeatherProvider{
-		openWeatherMap{},
-		weatherUnderground{apiKey: "your-key-here"},
-	}
+    mw := multiWeatherProvider{
+        openWeatherMap{},
+        weatherUnderground{apiKey: "your-key-here"},
+    }
 
-	http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
-		begin := time.Now()
-		city := strings.SplitN(r.URL.Path, "/", 3)[2]
+    http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
+        begin := time.Now()
+        city := strings.SplitN(r.URL.Path, "/", 3)[2]
 
-		temp, err := mw.temperature(city)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+        temp, err := mw.temperature(city)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"city": city,
-			"temp": temp,
-			"took": time.Since(begin).String(),
-		})
-	})
+        w.Header().Set("Content-Type", "application/json; charset=utf-8")
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "city": city,
+            "temp": temp,
+            "took": time.Since(begin).String(),
+        })
+    })
 
-	http.ListenAndServe(":8080", nil)
+    http.ListenAndServe(":8080", nil)
 }
 ```
 
@@ -565,38 +565,38 @@ We'll collect the responses in a single channel, and perform the average calcula
 
 ```go
 func (w multiWeatherProvider) temperature(city string) (float64, error) {
-	// Make a channel for temperatures, and a channel for errors.
-	// Each provider will push a value into only one.
-	temps := make(chan float64, len(w))
-	errs := make(chan error, len(w))
+    // Make a channel for temperatures, and a channel for errors.
+    // Each provider will push a value into only one.
+    temps := make(chan float64, len(w))
+    errs := make(chan error, len(w))
 
-	// For each provider, spawn a goroutine with an anonymous function.
-	// That function will invoke the temperature method, and forward the response.
-	for _, provider := range w {
-		go func(p weatherProvider) {
-			k, err := p.temperature(city)
-			if err != nil {
-				errs <- err
-				return
-			}
-			temps <- k
-		}(provider)
-	}
+    // For each provider, spawn a goroutine with an anonymous function.
+    // That function will invoke the temperature method, and forward the response.
+    for _, provider := range w {
+        go func(p weatherProvider) {
+            k, err := p.temperature(city)
+            if err != nil {
+                errs <- err
+                return
+            }
+            temps <- k
+        }(provider)
+    }
 
-	sum := 0.0
+    sum := 0.0
 
-	// Collect a temperature or an error from each provider.
-	for i := 0; i < len(w); i++ {
-		select {
-		case temp := <-temps:
-			sum += temp
-		case err := <-errs:
-			return 0, err
-		}
-	}
+    // Collect a temperature or an error from each provider.
+    for i := 0; i < len(w); i++ {
+        select {
+        case temp := <-temps:
+            sum += temp
+        case err := <-errs:
+            return 0, err
+        }
+    }
 
-	// Return the average, same as before.
-	return sum / float64(len(w)), nil
+    // Return the average, same as before.
+    return sum / float64(len(w)), nil
 }
 ```
 
@@ -608,7 +608,7 @@ Commit and push!
 
 ## Simplicity
 
-We've gome from hello, world to a concurrent, REST-ish backend server in a handful of steps and using only the Go standard library.
+We've gone from 'hello world' to a concurrent, REST-ish backend server in a handful of steps and using only the Go standard library.
 Our code can be fetched and deployed on [nearly any server architecture](https://golang.org/doc/install#requirements).
 The resulting binary is self-contained and fast.
 And, most importantly, the code is straightforward to read and reason about.
@@ -618,6 +618,8 @@ As Rob "Commander" Pike puts it,
 [less is exponentially more](http://commandcenter.blogspot.com/2012/06/less-is-exponentially-more.html).
 
 ## Further exercises
+
+[Fork](https://github.com/peterbourgon/how-i-start-go) the final code on github.
 
 Can you add another weatherProvider? (Hint: [forecast.io](https://developer.forecast.io/) is a good one.)
 
