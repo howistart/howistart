@@ -524,7 +524,7 @@ line to tell the shell that this is a Ruby script. We then load our library,
 and print our constant.
 
 I don't tend to test 'binaries.' All the logic should go in the gem itself, the
-library is just a thin shim to shove the command-line options to the Real Code.
+binary is just a thin shim to shove the command-line options to the Real Code.
 
 ## Write some docs
 
