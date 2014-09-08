@@ -434,7 +434,7 @@ end
 ```
 
 Easy enough! We start off by requiring the test runner, requiring our library,
-and then we make a class to hold our test. One method, ending in `_test`, is
+and then we make a class to hold our test. One method, starting with `test_`, is
 our test itself.  We have one simple assertion, which checks that we've set a
 constant to the URL of this post. Nice and easy.
 
