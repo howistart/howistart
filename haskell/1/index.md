@@ -26,6 +26,47 @@ After you've finished the install instructions, `ghc`, `cabal`, and `ghci` shoul
 We're going to write a little csv parser for some baseball data. I don't care a whit about baseball, but it was the best example of free data I could find.
 
 
+
+## Project layout
+
+
+There's not a prescribed project layout, but there are a few guidelines I would advise following.
+
+One is that [Edward Kmett's lens library](https://github.com/ekmett/lens) is not only a fantastic library in its own right, but is also a great resource for people wanting to see how to structure a Haskell project, write and generate `Haddock` documentation, and organize your namespaces. Kmett's library follows [Hackage guidelines](http://hackage.haskell.org/packages/) on what namespaces and categories to use for his libraries.
+
+There is an alternative namespacing pattern demonstrated by [Pipes, a streaming library](http://hackage.haskell.org/package/pipes). It uses a top-level eponymous namespace. For an example of another popular project you could also look at [Pandoc](https://github.com/jgm/pandoc/) for examples of how to organize non-trivial Haskell projects.
+
+Once we've finished laying out our project, it's going to look like this:
+
+```bash
+$ tree
+.
+├── LICENSE
+├── Setup.hs
+├── cabal.sandbox.config
+├── bassbull.cabal
+├── src
+│   ├── Main.hs
+4 directories, 7 files
+```
+
+
+Here's where each of those files are going to come from.
+
+
+* We'll use `cabal init` to generate `LICENSE`, `Setup.hs`,
+and `bassbull.cabal`.
+
+* When we initialize our cabal sandbox, later it will generate `cabal.sandbox.config`.
+
+* You'll need to `mkdir src` and `touch src/Main.hs` for your
+`src/Main.hs` file to exist and that's where we'll be putting our
+code after we've made our project directory.
+
+
+Ordinarily I'd structure things a little more, but there isn't a lot to this project. Onward!
+
+
 ## Getting your project started
 
 
@@ -109,46 +150,6 @@ version control that as it would bloat the git repository and
 doesn't need to be version controlled.
 
 
-## Project layout
-
-
-There's not a prescribed project layout, but there are a few guidelines I would advise following.
-
-One is that [Edward Kmett's lens library](https://github.com/ekmett/lens) is not only a fantastic library in its own right, but is also a great resource for people wanting to see how to structure a Haskell project, write and generate `Haddock` documentation, and organize your namespaces. Kmett's library follows [Hackage guidelines](http://hackage.haskell.org/packages/) on what namespaces and categories to use for his libraries.
-
-There is an alternative namespacing pattern demonstrated by [Pipes, a streaming library](http://hackage.haskell.org/package/pipes). It uses a top-level eponymous namespace. For an example of another popular project you could also look at [Pandoc](https://github.com/jgm/pandoc/) for examples of how to organize non-trivial Haskell projects.
-
-Once we've finished laying out our project, it's going to look like this:
-
-```bash
-$ tree
-.
-├── LICENSE
-├── Setup.hs
-├── cabal.sandbox.config
-├── bassbull.cabal
-├── src
-│   ├── Main.hs
-4 directories, 7 files
-```
-
-
-Here's where each of those files are going to come from.
-
-
-* `cabal init` should have generated `LICENSE`, `Setup.hs`,
-and `bassbull.cabal`.
-
-* `cabal sandbox init` should have generated `cabal.sandbox.config`
-
-* You'll need to `mkdir src` and `touch src/Main.hs` for your
-`src/Main.hs` file to exist and that's where we'll be putting our
-code.
-
-
-Ordinarily I'd structure things a little more, but there isn't a lot to this project. Onward!
-
-
 ## Editing the Cabal file
 
 
@@ -207,7 +208,7 @@ One thing to note is that for a module to work as a `main-is` target for GHC, it
 
 For now, we've left Main very simple, making it just a `putStrLn` of the string `"Hello"`. To validate that everything is working, let's build and run this program.
 
-First we create our Cabal sandbox so that our dependencies are isolated to this project.
+We're going to create a Cabal sandbox so that our dependencies are isolated to this project.
 
 ```bash
 $ cabal sandbox init
@@ -237,7 +238,7 @@ hello
 $
 ```
 
-If that worked, let's move onto writing a little csv processor.
+If everything is in place, let's move onto writing a little csv processor.
 
 ## Writing a program to process csv data
 
@@ -831,6 +832,204 @@ main = do
 ```
 
 Because Haskell has abstractions like the `Foldable` typeclass, we can talk about folding a dataset without caring about the underlying implementation! We could've used the `foldr` from `Foldable` on our `Vector`, a `List`, a `Tree`, a `Map` - not just Cassava's streaming API. `foldr` from `Foldable` has the type: `Foldable t => (a -> b -> b) -> b -> t a -> b`. Note the similarity with the `foldr` for the list type, `(a -> b -> b) -> b -> [a] -> b`. What we've done is abstracted the specific type out and made it into a generic interface.
+
+
+## Adding tests
+
+Now we're going to add tests to our package. First we are going to add a
+test suite to our `bassbull.cabal` file. The name of our test suite will
+just be `tests`.
+
+```
+test-suite tests
+  ghc-options:         -Wall
+  type:                exitcode-stdio-1.0
+  main-is:             Tests.hs
+  hs-source-dirs:      tests
+  build-depends:       base,
+                       bassbull,
+                       hspec >= 2.0 < 2.1
+  default-language:    Haskell2010
+```
+
+We're also going to add a library and shift over some code so that our
+package is exposed as a proper library rather than only working as an
+executable. We're exposing a single module named `Bassbull`. With
+an `hs-source-dirs` of `src` and an exposed module named `Bassbull`,
+Cabal will expect a file to exist at `src/Bassbull.hs`.
+
+```
+library
+  ghc-options:         -Wall
+  exposed-modules:     Bassbull
+  build-depends:       base >= 4.7 && <5,
+                       bytestring,
+                       vector,
+                       cassava
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+```
+
+We need to change our executable in the Cabal file so
+that it depends on our library. No point duplicating the code!
+
+
+```
+executable bassbull
+  main-is:             Main.hs
+  ghc-options:         -rtsopts -O2
+  build-depends:       base,
+                       bassbull,
+                       bytestring,
+                       cassava
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+```
+
+
+Next we're going to create a file named `src/Bassbull.hs` and shift
+code from `src/Main.hs` over to it. Note we've also refactored our
+`main` function so it takes an argument of what csv file to process.
+
+```haskell
+-- src/Bassbull.hs
+
+module Bassbull where
+
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.Foldable as F
+import Data.Csv.Streaming
+
+type BaseballStats = (BL.ByteString, Int, BL.ByteString, Int)
+
+baseballStats :: BL.ByteString -> Records BaseballStats
+baseballStats = decode NoHeader
+
+fourth :: (a, b, c, d) -> d
+fourth (_, _, _, d) = d
+
+summer :: (a, b, c, Int) -> Int -> Int
+summer = (+) . fourth
+
+-- FilePath is just an alias for String
+getAtBatsSum :: FilePath -> IO Int
+getAtBatsSum battingCsv = do
+  csvData <- BL.readFile battingCsv
+  return $ F.foldr summer 0 (baseballStats csvData)
+```
+
+And here's our defrocked `src/Main.hs` which is now only responsible
+for fronting the executable.
+
+```haskell
+module Main where
+
+import Bassbull
+
+main :: IO ()
+main = do
+  summed <- getAtBatsSum "batting.csv"
+  putStrLn $ "Total atBats was: " ++ (show summed)
+```
+
+Next we'll create a directory named `tests` and add a file named
+`Tests.hs` to it.
+
+For our tests, we're going to use [HSpec](http://hspec.github.io/)
+because the library is easy to use, the syntax is clean, and the
+author [Simon Hengel](https://github.com/sol) is one of the most
+responsive and helpful I've run into in open source.
+
+Here's our `tests/Tests.hs` file
+
+```haskell
+module Main where
+
+import Bassbull
+import Test.Hspec
+
+main :: IO ()
+main = hspec $ do
+  describe "Verify that bassbull outputs the correct data" $ do
+    it "equals zero" $ do
+      theSum <- getAtBatsSum "batting.csv"
+      theSum `shouldBe` 4858210
+```
+
+There's not too much here. We're importing `Bassbull`, which is
+the library module we've exposed. This is also a `Main` module
+with its own `main` file because we execute our test suite as a binary
+just like we do with executables.
+
+With all that in place, we'll install the dependencies our tests need.
+
+```bash
+$ cabal install --enable-tests
+```
+
+Then to run the actual tests, we'll run `cabal test`.
+
+```bash
+$ cabal test
+```
+
+Incidentally, `cabal test` is just a shortcut for building `tests`
+specifically, then running the executable produced to see test output.
+
+You aren't limited to building the `tests` binary and running your
+tests in that manner. You can also pass `cabal repl` an argument
+to make it load your tests. This can be faster as the REPL uses an
+interpreter and can reload your code very quickly - much more quickly
+than doing a full build & execution run.
+
+```bash
+$ cabal repl tests
+```
+
+The above will then give you a REPL which can see anything the build
+in your Cabal named `tests` can see. You can then run the `main`
+function or individual test suites - if you bother to split them out.
+
+Tests are useful and important in Haskell, although I often find I
+need *much* fewer of them. Often my process for working on an existing
+Haskell project will involve working on the code I'm changing with
+Emacs and a REPL instantiated via `cabal repl`. As my code starts
+passing the type-checker, I start running the tests as another
+layer of assurance that I'm doing the right thing.
+
+I like having a lot of feedback and help from my computer when
+writing code!
+
+
+## Making your Haskell packages available to the Haskell community
+
+[Hackage](https://hackage.haskell.org/) is the main community
+repository of Haskell packages and will usually be where you look to
+find libraries you need.
+
+Mostly you'll find libraries and the occasional executable utility,
+but utilities should *also* be exposing library APIs that make their
+functionality accessible via Haskell code. This is not only more
+useful to other people but enforces good practices and more modular
+projects.
+
+Haskell users are accustomed to documentation that is accessible
+via the Hackage website directly [such as you might find for the
+base library that comes with
+GHC](http://hackage.haskell.org/package/base-4.7.0.1/docs/Data-Functor.html).
+The tool that builds this documentation is called
+[Haddock](https://www.haskell.org/haddock/).
+
+I strongly recommend you look at well-established libraries like
+[lens](github.com/ekmett/lens) for examples of how to [build
+your documentation](https://github.com/ekmett/lens/blob/master/scripts/hackage-docs.sh)
+and
+[use continuous integration](https://github.com/ekmett/lens/blob/master/.travis.yml)
+with your Haskell projects.
+
+To learn more and for more information on building a package for
+uploading to Hackage see
+[this tutorial](https://www.haskell.org/haskellwiki/How_to_write_a_Haskell_program).
 
 
 ## Wrapping up
