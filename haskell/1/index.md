@@ -298,7 +298,7 @@ Ok, modules loaded: Main.
 
 Becoming comfortable with the REPL can be a serious boon to productivity. There is editor integration for those that want it as well.
 
-Now we're going to update our `src/Main.hs`.
+Now we're going to update our `src/Main.hs`. Our goal is to read a CSV file into a `ByteString` (basically a byte vector), parse the `ByteString` into a `Vector` of tuples, and sum up the "at bats" column.
 
 ```haskell
 module Main where
@@ -530,8 +530,7 @@ the following.
 ```
 
 
-`Show` is a function from the
-typeclass `Show`. Here's how you can find out about it in your REPL:
+`show` is a function from the typeclass `Show`. Here's how you can find out about it in your REPL:
 
 
 ```haskell
