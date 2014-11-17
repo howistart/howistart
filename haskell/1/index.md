@@ -830,7 +830,32 @@ main = do
   where summer = (+) . fourth
 ```
 
+The core here is the `Records` datatype `Cassava` gives us via the Streaming module. You can read more about the `Records` datatype [on hackage](http://hackage.haskell.org/package/cassava-0.4.2.0/docs/Data-Csv-Streaming.html#t:Records). `Records` is a sum type, you could read out in English like so:
+
+* `data Records a` -> Records is a datatype that takes a type variable `a`
+
+* `Cons (...) | Nil (...)` -> It is a sum type of two possible constructors, `Cons` or `Nil` (note the list-like nomenclature). This is way of saying a `Record a` is always either `Cons` or `Nil`.
+
+* `Cons (Either String a) (Record a)` -> the `Cons` data constructor is a product of `Either String a` and `Record a`. We're saying `Cons` is always `Either String a` *and* `Record a`. Also, this `Cons` resembles the cons-cells in Lisp, Haskell, ML, etc. The library has the following comment about it: `A record or an error message, followed by more records.`
+
+* `Nil (Maybe String) BL.ByteString` -> the `Nil` data constructor is a product of `Maybe String` and `BL.ByteString`. The library has the following comment: `End of stream, potentially due to a parse error. If a parse error occured, the first field contains the error message. The second field contains any unconsumed input.`
+
 Because Haskell has abstractions like the `Foldable` typeclass, we can talk about folding a dataset without caring about the underlying implementation! We could've used the `foldr` from `Foldable` on our `Vector`, a `List`, a `Tree`, a `Map` - not just Cassava's streaming API. `foldr` from `Foldable` has the type: `Foldable t => (a -> b -> b) -> b -> t a -> b`. Note the similarity with the `foldr` for the list type, `(a -> b -> b) -> b -> [a] -> b`. What we've done is abstracted the specific type out and made it into a generic interface.
+
+In case you're wondering what the `Foldable` instance is doing under the hood:
+
+```haskell
+-- | Skips records that failed to convert.
+instance Foldable Records where
+    foldr = foldrRecords
+
+foldrRecords :: (a -> b -> b) -> b -> Records a -> b
+foldrRecords f = go
+  where
+    go z (Cons (Right x) rs) = f x (go z rs)
+    go z _ = z
+{-# INLINE foldrRecords #-}
+```
 
 
 ## Adding tests
@@ -847,7 +872,7 @@ test-suite tests
   hs-source-dirs:      tests
   build-depends:       base,
                        bassbull,
-                       hspec >= 2.0 < 2.1
+                       hspec >= 2.0 && < 2.1
   default-language:    Haskell2010
 ```
 
