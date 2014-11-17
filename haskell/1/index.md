@@ -1100,7 +1100,7 @@ I found this to be easier than fussing around with adding the sandbox binary dir
 
 ### Sublime Text 2/3
 
-* https://github.com/SublimeHaskell/SublimeHaskell
+* [The SublimeHaskell plugin uses ghc-mod](https://github.com/SublimeHaskell/SublimeHaskell)
 
 ### My personal dotfiles
 
