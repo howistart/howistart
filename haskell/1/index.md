@@ -1031,6 +1031,82 @@ uploading to Hackage see
 [this tutorial](https://www.haskell.org/haskellwiki/How_to_write_a_Haskell_program).
 
 
+## How I work
+
+
+When I'm working with Haskell code, I interact with my code in a few ways. One is that I'm writing the code itself in Emacs. I'll also have a terminal with a REPL open, usually via `cabal repl` as I am almost always working on a specific project.
+
+My Emacs config is pretty sundry, it's just `haskell-mode` and `ghc-mod`. `ghc-mod` is where the real magic comes up. This is how I get things like "tell me the type of that sub-expression" via a keyboard shortcut without having to type the code into my REPL. One nice thing about ghc-mod is that it is just a little service that runs independently of your editor, so it works with vim and SublimeText as well.
+
+For a quick demonstration of how I work in Haskell (I don't show off everything in ghc-mod), [take a look at this video I made](https://www.youtube.com/watch?v=Li6oaO8x2VY).
+
+My basic happy-path event-loop for writing Haskell is:
+
+1. Import module I'm working on in the REPL before I've changed anything
+
+2. Change/add/delete code
+
+3. `:reload` in the REPL. `ghc-mod` will give me type errors, but I sometimes like to see them in the REPL too.
+
+4. Sometimes I'll use eta-reduction to refactor code. You can see an example of this [in this code review on StackExchange](http://codereview.stackexchange.com/questions/57843/update-map-in-haskell/57850#57850). Making code point-free makes the most sense when it's primarily about *composing* functions rather than about applying them.
+
+5. If code still type-checks after some cleaning, I'll run the tests. If tests pass, I move on unless I'm suspicious about test coverage. If tests break or I want more coverage, I write more tests until I'm satisfied. When that's done, I return to step #1 in this loop for the next unit of work I want to perform.
+
+My diagnosis process when something *isn't* working:
+
+1. If I can't get something to type-check, I'll break down sub-expression, query the types of those sub-expressions and make certain they were what I expected.
+
+2. If have expressions I am trying to combine and I trying to make the types thereof make sense, but I haven't implemented them yet I will use `undefined` and work with only application, composition, and monadic variations thereof to figure out how I need to get to where I'm going before I've implemented anything. You can see a good [example of this in this Github gist](https://gist.github.com/ifesdjeen/4be994aea5846aa1c2fe). I wrote the solution @ifesdjeen displays in his final comment.
+
+3. If I have a function expecting arguments I can't figure out how to satisfy, I will sometimes use [typed holes](https://www.haskell.org/haskellwiki/GHC/Typed_holes) or a similar trick with implicit parameters to see what type I need to provide.
+
+4. Since Haskell functions are pure and lazy, I can replace references to functions with their contents with a high degree of confidence that it will not change the semantics of my program. To that end, sometimes it's easier to understand what's going on by inlining the code by hand and seeing what your code turns into.
+
+5. If something type-checks but doesn't work, I'll run the tests. If the coverage isn't catching it, I add it. This is less common for me in Haskell than you'd think. If I can frame the test as an assertion about some *property* the code should satisfy like with [QuickCheck](http://hackage.haskell.org/package/QuickCheck) I will do so. You can learn more about using QuickCheck in [Real World Haskell](http://book.realworldhaskell.org/read/testing-and-quality-assurance.html).
+
+One common mistake people make is not having `ghc-mod` and `ghc-modi` in a path that Emacs knows about. I recommend doing the following to install ghc-mod itself:
+
+```bash
+# We update so cabal-install knows about the latest versions of ghc-mod.
+$ cabal update
+$ cabal unpack ghc-mod
+# At time of writing, this was the current version. Change as necessary.
+$ cd ./ghc-mod-5.2.1.1
+$ cabal sandbox init
+$ cabal install
+$ sudo ln -s `pwd`/.cabal-sandbox/bin/ghc-mod /usr/bin/ghc-mod
+$ sudo ln -s `pwd`/.cabal-sandbox/bin/ghc-modi /usr/bin/ghc-modi
+```
+
+I found this to be easier than fussing around with adding the sandbox binary directories to Emacs' search path.
+
+
+### ghc-mod
+
+* [Hackage page](https://hackage.haskell.org/package/ghc-mod)
+* [Github repository](https://github.com/kazu-yamamoto/ghc-mod)
+
+### Emacs
+
+* [Haskell wiki section on Emacs and ghc-mod](https://www.haskell.org/haskellwiki/Emacs#ghc-mod)
+
+* [Installing ghc.el (ghc-mod integration) for Emacs](http://www.mew.org/~kazu/proj/ghc-mod/en/preparation.html)
+
+* [Using ghc-mod in Emacs](http://www.mew.org/~kazu/proj/ghc-mod/en/emacs.html)
+
+### vim
+
+* [vim plugin Github repository](https://github.com/eagletmt/ghcmod-vim)
+
+### Sublime Text 2/3
+
+* https://github.com/SublimeHaskell/SublimeHaskell
+
+### My personal dotfiles
+
+* [My dotfiles on Github](https://github.com/bitemyapp/dotfiles)
+
+
 ## Wrapping up
 
 
