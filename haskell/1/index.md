@@ -836,9 +836,9 @@ The core here is the `Records` datatype `Cassava` gives us via the Streaming mod
 
 * `Cons (...) | Nil (...)` -> It is a sum type of two possible constructors, `Cons` or `Nil` (note the list-like nomenclature). This is way of saying a `Record a` is always either `Cons` or `Nil`.
 
-* `Cons (Either String a) (Record a)` -> the `Cons` data constructor is a product of `Either String a` and `Record a`. We're saying `Cons` is always `Either String a` *and* `Record a`. Also, this `Cons` resembles the cons-cells in Lisp, Haskell, ML, etc. The library has the following comment about it: `A record or an error message, followed by more records.`
+* `Cons (Either String a) (Record a)` -> the `Cons` data constructor is a product of `Either String a` and `Record a`. We're saying `Cons` is always `Either String a` *and* `Record a`. Also, this `Cons` resembles the cons-cells in Lisp, Haskell, ML, etc. The library has the following comment about it: "A record or an error message, followed by more records."
 
-* `Nil (Maybe String) BL.ByteString` -> the `Nil` data constructor is a product of `Maybe String` and `BL.ByteString`. The library has the following comment: `End of stream, potentially due to a parse error. If a parse error occured, the first field contains the error message. The second field contains any unconsumed input.`
+* `Nil (Maybe String) BL.ByteString` -> the `Nil` data constructor is a product of `Maybe String` and `BL.ByteString`. The library has the following comment: "End of stream, potentially due to a parse error. If a parse error occured, the first field contains the error message. The second field contains any unconsumed input."
 
 What the Records type is doing for us is letting us process the records like a lazy list, but with a little extra context in the `Nil` case.
 
