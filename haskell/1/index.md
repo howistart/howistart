@@ -840,6 +840,8 @@ The core here is the `Records` datatype `Cassava` gives us via the Streaming mod
 
 * `Nil (Maybe String) BL.ByteString` -> the `Nil` data constructor is a product of `Maybe String` and `BL.ByteString`. The library has the following comment: `End of stream, potentially due to a parse error. If a parse error occured, the first field contains the error message. The second field contains any unconsumed input.`
 
+What the Records type is doing for us is letting us process the records like a lazy list, but with a little extra context in the `Nil` case.
+
 Because Haskell has abstractions like the `Foldable` typeclass, we can talk about folding a dataset without caring about the underlying implementation! We could've used the `foldr` from `Foldable` on our `Vector`, a `List`, a `Tree`, a `Map` - not just Cassava's streaming API. `foldr` from `Foldable` has the type: `Foldable t => (a -> b -> b) -> b -> t a -> b`. Note the similarity with the `foldr` for the list type, `(a -> b -> b) -> b -> [a] -> b`. What we've done is abstracted the specific type out and made it into a generic interface.
 
 In case you're wondering what the `Foldable` instance is doing under the hood:
