@@ -11,11 +11,11 @@ The most popular compiler for Haskell is `GHC` and you use `Cabal` alongside `GH
 
 To get GHC and Cabal installed, use one of the following links:
 
-* Windows: http://www.haskell.org/platform/windows.html
+* Windows: [http://www.haskell.org/platform/windows.html](http://www.haskell.org/platform/windows.html)
 
-* OS X: http://new-www.haskell.org/downloads/osx
+* OS X: [http://new-www.haskell.org/downloads/osx](http://new-www.haskell.org/downloads/osx)
 
-* Linux: http://new-www.haskell.org/downloads/linux
+* Linux: [http://new-www.haskell.org/downloads/linux](http://new-www.haskell.org/downloads/linux)
 
 After you've finished the install instructions, `ghc`, `cabal`, and `ghci` should all be in your path. `ghci` is the REPL (read-eval-print loop) for Haskell, though as often as not, you'll use `cabal repl` to invoke a REPL that is aware of your project and its dependencies.
 
@@ -1100,7 +1100,7 @@ I found this to be easier than fussing around with adding the sandbox binary dir
 
 ### Sublime Text 2/3
 
-* https://github.com/SublimeHaskell/SublimeHaskell
+* [The SublimeHaskell plugin uses ghc-mod](https://github.com/SublimeHaskell/SublimeHaskell)
 
 ### My personal dotfiles
 
