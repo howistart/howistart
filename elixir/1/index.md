@@ -518,7 +518,7 @@ iex> Portal.push_right(portal)
 >
 ```
 
-And what happens if we stop the `:blue` agent now?
+And what happens if we stop the `:blue` process now?
 
 ```iex
 iex> Process.unlink(Process.whereis(:blue))
@@ -625,7 +625,7 @@ We challenge you to continue learning and exploring more of Elixir by taking you
 
 We welcome you to explore our [website](http://elixir-lang.org) and read our Getting Started guide or many of the available resources to learn more about Elixir and our vibrant community.
 
-Finally, huge thanks to [Augie De Blieck Jr.](http://twitter.com/augiedb) for the drawings in this tutorial. You can read more about his contributions to the Elixir Community on his blog [Various and Sundry](http://www.variousandsundry.com/cs).
+Finally, huge thanks to [Augie De Blieck Jr.](http://twitter.com/augiedb) for the drawings in this tutorial.
 
 See you around!
 
