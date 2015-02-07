@@ -1093,7 +1093,9 @@ $ nim c -r tests/all
 ```
 
 Great success, our library works! With this we have a fully fledged library,
-binary and testing framework setup. Time to publish [everything on
+binary and testing framework setup.
+
+Time to publish [everything on
 Github](https://github.com/def-/nim-brainfuck) and submit a pull request to
 have `brainfuck` included in the [nimble
 packages](https://github.com/nim-lang/packages). Once the package is accepted
@@ -1111,6 +1113,64 @@ brainfuck:
 $ nimble install brainfuck
 ```
 
+## Continuous Integration
+
+[CircleCI](https://circleci.com/) can be used with Nim for continuous
+integration, so that our tests are compiled and run whenever a new commit is
+pushed to Github. Since CircleCI does not know about Nim itself, we have to
+teach it how to bootstrap the compiler:
+
+```markdown
+dependencies:
+  pre:
+    - |
+        if [ ! -x ~/nim/bin/nim ]; then
+          sudo apt-get install gcc
+          git clone -b devel --depth 1 git://github.com/araq/nim ~/nim/
+          git clone -b devel --depth 1 git://github.com/nim-lang/csources ~/nim/csources/
+          cd ~/nim/csources; sh build.sh; cd ..; rm -rf csources
+          bin/nim c koch; ./koch boot -d:release
+          ln -fs ~/nim/bin/nim ~/bin/nim
+        else
+          cd ~/nim; git fetch origin
+          git merge FETCH_HEAD | grep "Already up-to-date" || (bin/nim c koch; ./koch boot -d:release)
+        fi
+
+  cache_directories:
+    - "~/bin/"
+    - "~/nim/"
+```
+
+This automatically keeps the compiler up to date. If you want to use the most
+recently released version of Nim instead of the development build, use the
+`master` branch instead of `devel` in the two `git clone` calls. Running the
+tests is straightfoward now:
+
+```markdown
+test:
+  override:
+    - nim c -r tests/all
+```
+
+If your project also just needs to compile and run `tests/all`, then you can
+drop in [this
+circle.yml](https://github.com/def-/nim-brainfuck/blob/master/circle.yml)
+directly. Otherwise, the `test:` section is the only part you will need to
+change.
+
+The build status badge [![Build
+Status](https://circleci.com/gh/def-/nim-brainfuck.png)](https://circleci.com/gh/def-/nim-brainfuck)
+can be added to the `readme.md` like this:
+
+```markdown
+# Brainfuck for Nim [![Build Status](https://circleci.com/gh/def-/nim-brainfuck.png)](https://circleci.com/gh/def-/nim-brainfuck)
+```
+
+See the [Github page](https://github.com/def-/nim-brainfuck) again for the
+final result and the [CircleCI
+page](https://circleci.com/gh/def-/nim-brainfuck) for the [actual
+builds](https://circleci.com/gh/def-/nim-brainfuck/25).
+
 ## Conclusion
 
 This is the end of our tour through the Nim ecosystem, I hope you enjoyed it
@@ -1126,3 +1186,6 @@ Example](https://nim-by-example.github.io/) can guide you.
 
 The [Nim community](http://nim-lang.org/community.html) is very welcoming and
 helpful.
+
+Thanks to everyone who had suggestions and found bugs in this document,
+especially Flaviu Tamas, Andreas Rumpf and Dominik Picheta.
