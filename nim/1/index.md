@@ -7,8 +7,8 @@ For this purpose we will write a small interpreter for the [brainfuck
 language](https://en.wikipedia.org/wiki/Brainfuck).  While Nim is a practical
 language with many interesting features, brainfuck is the opposite: It's
 impractical to write in and its features consist of 8 single-character
-commands. Still, brainfuck is great for us, since its extreme simplicity makes
-it easy to write an interpreter for it. Later we will even write a
+commands. Still, brainfuck is a great example , since its extreme simplicity
+makes it easy to write an interpreter for it. Later we will even write a
 high-performance compiler that transforms brainfuck programs into Nim at
 compile time. We will put all of this into a nimble package and publish it
 online.
@@ -48,8 +48,8 @@ them. On a Debian based distribution (like Ubuntu) we can install it like this:
 $ sudo apt-get install git
 ```
 
-After you've finished the installation, you should have the `nim` binary in
-your path. If you use bash, this is what to do:
+After you've finished the installation, you should add the `nim` binary to your
+path. If you use bash, this is what to do:
 
 ```bash
 $ export PATH=$PATH:$your_install_dir/bin >> ~/.profile
@@ -182,11 +182,11 @@ mode, giving us full speed:
 
 ```bash
 $ nim c hello
-$ ./hello
+$ time ./hello
 Hello World 100000000
 ./hello  2.01s user 0.00s system 99% cpu 2.013 total
 $ nim -d:release c hello
-$ ./hello
+$ time ./hello
 Hello World 100000000
 ./hello  0.00s user 0.00s system 74% cpu 0.002 total
 ```
@@ -213,10 +213,10 @@ license       = "BSD"
 Requires: "nim >= 0.10.0"
 ```
 
-Let's add our name as the actual author, description as well as the requirement
-for docopt, as described in [nimble's developers
-  info](https://github.com/nim-lang/nimble/blob/master/developers.markdown).
-  Most importantly, let's set the binary we want to create:
+Let's add the actual author, a description, as well as the requirement for
+docopt, as described in [nimble's developers
+info](https://github.com/nim-lang/nimble/blob/master/developers.markdown).
+Most importantly, let's set the binary we want to create:
 
 ```
 [Package]
@@ -394,7 +394,8 @@ There are a few things to note here:
 Before we continue, let's think about how brainfuck works. This may look
 familiar if you've encountered Turing machines before. We have an input string
 `code` and a `tape` of chars that can grow infinitely in one direction. These
-are the 8 commands that can occur in the input string:
+are the 8 commands that can occur in the input string, every other character is
+ignored:
 
 | Op  | Meaning                                                               | Nim equivalent                   |
 |:---:| --------------------------------------------------------------------- | -------------------------------- |
@@ -573,15 +574,11 @@ proc interpret*(code: string) =
 `nim doc brainfuck` builds the documentation, which you can [see
 online](http://hookrace.net/nim-brainfuck/brainfuck.html) in its full glory.
 
-So that others can use our library easily, we upload it on github
-or bitbucket and create a pull request to have it included in the [nimble
-packages](https://github.com/nim-lang/packages).
-
 ## Metaprogramming
 
 As I said before, our interpreter is still pretty slow for the mandelbrot
-program. Let's write a procedure that creates a Nim code AST at compiletime
-instead:
+program. Let's write a procedure that creates a [Nim code
+AST](http://nim-lang.org/macros.html) at compiletime instead:
 
 ```nimrod
 import macros
@@ -593,7 +590,6 @@ proc compile(code: string): PNimrodNode {.compiletime.} =
     stmts[stmts.high].add parseStmt(text)
 
   addStmt "var tape: array[1_000_000, char]"
-  addStmt "var codePos = 0"
   addStmt "var tapePos = 0"
 
   for c in code:
@@ -713,7 +709,7 @@ $ nim -d:release c brainfuck
 $ ./brainfuck
 ```
 
-## Using the C backend for more
+## Compiler settings
 
 By default Nim compiles the C code with GCC, but clang usually compiles faster
 and may even yield more efficient code. It's always worth a try. To compile
@@ -722,9 +718,22 @@ compiling with clang, create a `hello.nim.cfg` file with the content `cc =
 clang`. To change the default backend compiler, edit `config/nim.cfg` in Nim's
 directory.
 
-Another advantage is that we can use debuggers with C support, like GDB. Simply
-compile your program with `nim c --linedir:on --debuginfo c hello` and `gdb
-./hello` can be used to debug your program.
+While we're talking about changing default compiler options. The Nim compiler
+is quite talky at times, which can be disabled by setting `hints = off` in the
+Nim compiler's `config/nim.cfg`. One of the more unexpected compiler warnings
+even warns you if you use `l` (small `L`) as an identifier, because it may look
+similar to `1` (one):
+
+```
+a.nim(1, 4) Warning: 'l' should not be used as an identifier; may look like '1' (one) [SmallLshouldNotBeUsed]
+```
+
+If you're not a fan of this, a simple `warning[SmallLshouldNotBeUsed] = off`
+suffices to make the compiler shut up.
+
+Another advantage of Nim is that we can use debuggers with C support, like GDB.
+Simply compile your program with `nim c --linedir:on --debuginfo c hello` and
+`gdb ./hello` can be used to debug your program.
 
 ## Command line argument parsing
 
@@ -787,13 +796,325 @@ $ brainfuck interpret examples/helloworld.b
 Hello World!
 ```
 
-The full program and library we created are [available on
-Github](https://github.com/def-/nim-brainfuck/).
+## Refactoring
+
+Since our project is growing, we move the main source code into a `src`
+directory and add a `tests` directory, which we will soon need, resulting in a
+final directory structure like this:
+
+```bash
+$ tree
+.
+├── brainfuck.nimble
+├── examples
+│   ├── helloworld.b
+│   ├── mandelbrot.b
+│   └── rot13.b
+├── license.txt
+├── readme.md
+├── src
+│   └── brainfuck.nim
+└── tests
+    ├── all.nim
+    ├── compile.nim
+    ├── interpret.nim
+    └── nim.cfg
+```
+
+This also requires us to change the nimble file:
+
+```
+srcDir = "src"
+bin    = "brainfuck"
+```
+
+To improve reusability of our code, we turn to refactoring it. The main concern
+is that we always read from stdin and write to stdout.
+
+Instead of accepting just a `code: string` as its parameter, we extend the
+`interpret` procedure to also receive an input and output stream. This uses the
+[streams module](http://nim-lang.org/streams.html) that provides FileStreams
+and StringStreams:
+
+```nimrod
+## :Author: Dennis Felsing
+##
+## This module implements an interpreter for the brainfuck programming language
+## as well as a compiler of brainfuck into efficient Nim code.
+##
+## Example:
+##
+## .. code:: nim
+##   import brainfuck, streams
+##
+##   interpret("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.")
+##   # Prints "Hello World!"
+##
+##   proc mandelbrot = compileFile("examples/mandelbrot.b")
+##   mandelbrot() # Draws a mandelbrot set
+
+import streams
+
+proc interpret*(code: string; input, output: Stream) =
+  ## Interprets the brainfuck `code` string, reading from `input` and writing
+  ## to `output`.
+  ##
+  ## Example:
+  ##
+  ## .. code:: nim
+  ##   var inpStream = newStringStream("Hello World!\n")
+  ##   var outStream = newFileStream(stdout)
+  ##   interpret(readFile("examples/rot13.b"), inpStream, outStream)
+```
+
+I've also added some module wide documentation, including example code for
+hou our library can be used. Take a look at the [resulting
+documentation](http://hookrace.net/nim-brainfuck/brainfuck.html).
+
+Most of the code stays the same, except the handling of brainfuck operations
+`.` and `,`, which now use `output` instead of `stdout` and `input` instead of
+`stdin`:
+
+```nimrod
+        of '.': output.write tape[tapePos]
+        of ',': tape[tapePos] = input.readCharEOF
+```
+
+What is this strange `readCharEOF` doing there instead of `readChar`? On many
+systems `EOF` (end of file) means `-1`. Our brainfuck programs actively use
+this. This means our brainfuck programs might actually not run on all systems.
+Meanwhile the streams module strives to be platform independent, so it returns
+a `0` if we have reached `EOF`. We use `readCharEOF` to convert this into a
+`-1` for brainfuck explicitly:
+
+```nimrod
+proc readCharEOF*(input: Stream): char =
+  result = input.readChar
+  if result == '\0': # Streams return 0 for EOF
+    result = 255.chr # BF assumes EOF to be -1
+```
+
+At this point you may notice that the order of identifier declarations matters
+in Nim. If you declare `readCharEOF` below `interpret`, you can not use it in
+`interpret`. I personally try to adhere to this, as it creates a hierarchy from
+simple code to more complex code in each module. If you still want to
+circumvent it, split declaration and definition and add the declaration above
+`interpret`:
+
+```nimrod
+proc readCharEOF*(input: Stream): char
+```
+
+The code to use the interpreter as conveniently as before is pretty simple:
+
+```nimrod
+proc interpret*(code, input: string): string =
+  ## Interprets the brainfuck `code` string, reading from `input` and returning
+  ## the result directly.
+  var outStream = newStringStream()
+  interpret(code, input.newStringStream, outStream)
+  result = outStream.data
+
+proc interpret*(code: string) =
+  ## Interprets the brainfuck `code` string, reading from stdin and writing to
+  ## stdout.
+  interpret(code, stdin.newFileStream, stdout.newFileStream)
+```
+
+Now the `interpret` procedure can be used to return a string. This will be
+important for testing later:
+
+```nimrod
+let res = interpret(readFile("examples/rot13.b"), "Hello World!\n")
+interpret(readFile("examples/rot13.b")) # with stdout
+```
+
+For the compiler the cleanup is a bit more complicated. First we have to take
+the `input` and `output` as strings, so that the user of this proc can use any
+stream they want:
+
+```nimrod
+proc compile(code, input, output: string): PNimrodNode {.compiletime.} =
+  var stmts = @[newStmtList()]
+
+  template addStmt(text): stmt =
+    stmts[stmts.high].add parseStmt(text)
+
+  addStmt """
+    when not compiles(newStringStream()):
+      static:
+        quit("Error: Import the streams module to compile brainfuck code", 1)
+  """
+
+  addStmt "var tape: array[1_000_000, char]"
+  addStmt "var inpStream = " & input
+  addStmt "var outStream = " & output
+  addStmt "var tapePos = 0"
+```
+
+We also added a statement that will abort compilation with a nice error message
+if the user of our library uses it wrongly.
+
+Of course now we have to use `outStream` and `inpStream` instead of stdout and
+stdin:
+
+```nimrod
+    of '.': addStmt "outStream.write tape[tapePos]"
+    of ',': addStmt "tape[tapePos] = inpStream.readCharEOF"
+```
+
+To connect this to a `compileFile` macro that uses stdout and stdin again, as
+we did before, we can write:
+
+```nimrod
+macro compileFile*(filename: string): stmt =
+  compile(staticRead(filename.strval),
+    "stdin.newFileStream", "stdout.newFileStream")
+```
+
+To read from an input string and write back to an output string:
+
+```nimrod
+macro compileFile*(filename: string; input, output: expr): stmt =
+  result = compile(staticRead(filename.strval),
+    "newStringStream(" & $input & ")", "newStringStream()")
+  result.add parseStmt($output & " = outStream.data")
+```
+
+This unwieldy code allows us to write a compiled `rot13` procedure like this,
+connecting the `input` string and the `result` to the compiled program:
+
+```nimrod
+proc rot13(input: string): string =
+  compileFile("../examples/rot13.b", input, result)
+echo rot13("Hello World!\n")
+```
+
+I did the same for `compileString` for convenience. You can check out the full
+code of `brainfuck.nim` [on
+Github](https://github.com/def-/nim-brainfuck/blob/master/src/brainfuck.nim).
+
+## Testing
+
+There are two main ways of testing code in Nim that you will run across. For
+small pieces of code you can simply use `assert`s inside a `when isMainModule`
+block at the end of the file. This ensures that the testing code will not be
+executed when the module is used as a library.
+
+Regular assertions can be turned off in Nim with `--assertions:off`, which is
+automatically set when we compile a release build. For this reason instead of
+`assert` we use `doAssert`, which will not be optimized away even in release
+builds. You will find tests like this at the end of many of the standard
+library's modules:
+
+```nimrod
+when isMainModule:
+  doAssert align("abc", 4) == " abc"
+  doAssert align("a", 0) == "a"
+  doAssert align("1232", 6) == " 1232"
+  doAssert align("1232", 6, '#') == "##1232"
+```
+
+For a bigger project the [unittest module](http://nim-lang.org/unittest.html)
+comes in handy.
+
+We split up the tests into 3 files in the `tests/` directory:
+
+`tests/interpret.nim` tests the interpreter. We define a new test suite,
+containing two testers, each checking the resulting strings:
+
+```nimrod
+import unittest, brainfuck
+
+suite "brainfuck interpreter":
+  test "interpret helloworld":
+    let helloworld = readFile("examples/helloworld.b")
+    check interpret(helloworld, input = "") == "Hello World!\n"
+
+  test "interpret rot13":
+    let rot13 = readFile("examples/rot13.b")
+    let conv = interpret(rot13, "How I Start\n")
+    check conv == "Ubj V Fgneg\n"
+    check interpret(rot13, conv) == "How I Start\n"
+```
+
+Similarly for `tests/compile.nim` to test our compiler:
+
+```nimrod
+import unittest, brainfuck, streams
+
+suite "brainfuck compiler":
+  test "compile helloworld":
+    proc helloworld: string =
+      compileFile("../examples/helloworld.b", "", result)
+    check helloworld() == "Hello World!\n"
+
+  test "compile rot13":
+    proc rot13(input: string): string =
+      compileFile("../examples/rot13.b", input, result)
+    let conv = rot13("How I Start\n")
+    check conv == "Ubj V Fgneg\n"
+    check rot13(conv) == "How I Start\n"
+```
+
+Note how we have to read the examples from `../examples/` with the compiler,
+instead of `examples/` with the interpreter. The reason for this is that the
+compiler's `staticRead` opens the files relative to the location of our file,
+which resides in `tests/`.
+
+To combine both tests we create a `tests/all.nim` that only imports and
+thereby automatically runs all test suites available:
+
+```nimrod
+import interpret, compile
+```
+
+For convenience we also create a `tests/nim.cfg` that sets some reasonable
+compiler options for testing and debugging:
+
+```cfg
+# $projectPath is tests/
+path = "$projectPath/../src"
+hints = off
+linedir = on
+debuginfo
+stacktrace = on
+linetrace = on
+```
+
+Finally, to compile and run our tests:
+
+```
+$ nim c -r tests/all
+[OK] interpret helloworld
+[OK] interpret rot13
+[OK] compile helloworld
+[OK] compile rot13
+```
+
+Great success, our library works! With this we have a fully fledged library,
+binary and testing framework setup. Time to publish [everything on
+Github](https://github.com/def-/nim-brainfuck) and submit a pull request to
+have `brainfuck` included in the [nimble
+packages](https://github.com/nim-lang/packages). Once the package is accepted
+you can find it in the [official list](http://nim-lang.org/lib.html#nimble) and
+use nimble to search for it and install it:
+
+```bash
+$ nimble search brainfuck
+brainfuck:
+  url:         https://github.com/def-/nim-brainfuck.git (git)
+  tags:        library, binary, app, interpreter, compiler, language
+  description: A brainfuck interpreter and compiler
+  license:     MIT
+  website:     https://github.com/def-/nim-brainfuck
+$ nimble install brainfuck
+```
 
 ## Conclusion
 
 This is the end of our tour through the Nim ecosystem, I hope you enjoyed it
-and found this as interesting as it was to write for me.
+and found it as interesting as it was for me to write it.
 
 If you still want to learn more about Nim, I have written about [what is
 special about Nim](http://hookrace.net/blog/what-is-special-about-nim/) and
