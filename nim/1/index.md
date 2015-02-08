@@ -501,8 +501,8 @@ tape.
 
 And that's it. We have a working brainfuck interpreter now. To test it, we
 create an `examples` directory containing these 3 files:
-[helloworld.b](examples/helloworld.b), [rot13.b](examples/rot13.b),
-[mandelbrot.b](examples/mandelbrot.b).
+[helloworld.b](/static/examples/nim/1/helloworld.b), [rot13.b](/static/examples/nim/1/rot13.b),
+[mandelbrot.b](/static/examples/nim/1/mandelbrot.b).
 
 ```
 $ nim -r c brainfuck examples/helloworld.b
