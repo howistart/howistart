@@ -646,7 +646,7 @@ var tapePos = 0
 inc tape[tapePos]
 inc tapePos
 inc tape[tapePos]
-while tape[tapePos] != '\0': 
+while tape[tapePos] != '\0':
   dec tape[tapePos]
 inc tapePos
 tape[tapePos] = stdin.readChar
@@ -1197,3 +1197,7 @@ Example](https://nim-by-example.github.io/) can guide you.
 The [Nim community](http://nim-lang.org/community.html) is very welcoming and
 helpful. Thanks to everyone who had suggestions and found bugs in this
 document, especially Flaviu Tamas, Andreas Rumpf and Dominik Picheta.
+
+<link href="/static/css/github.css" rel="stylesheet">
+<script src="/static/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
