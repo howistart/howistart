@@ -26,7 +26,7 @@ Let's get started!
 
 ## Installation
 
-Elixir's website explains how to get Elixir up and running. Just [follow the steps described in the Interactive Elixir page](http://elixir-lang.org/getting_started/1.html).
+Elixir's website explains how to get Elixir up and running. Just [follow the steps described in the Installing Elixir page](http://elixir-lang.org/install.html).
 
 Elixir developers spend a lot of time in their Operating System terminals; once installation is complete, you will have some new executables available. One of them is `iex`. Just type `iex` in your terminal (or `iex.bat` if you are on Windows) to get it up and running:
 
@@ -94,7 +94,7 @@ The command above created a new directory named `portal` with some files in it. 
 
 Excellent, we already have a working project with a test suite set up.
 
-Let's explore the generated project using a text editor. I personally don't pay much attention to text editors, I mostly use a stock [Sublime Text 3](http://www.sublimetext.com/3), but you can find [Elixir support for different text editors on the website](http://elixir-lang.org) under the "Code Editor Support" section.
+Let's explore the generated project using a text editor. I personally don't pay much attention to text editors, I mostly use a stock [Sublime Text 3](http://www.sublimetext.com/3) but you can find [Elixir support for different text editors on the website](http://elixir-lang.org) under the "Code Editor Support" section.
 
 With your editor open, explore the following directories:
 
@@ -133,7 +133,7 @@ iex> 2 = x
 ** (MatchError) no match of right hand side value: 1
 ```
 
-Now the sides did not match, so we got an error. We use pattern matching in Elixir to match data structures, too. For example, we can use `[head|tail]` to extract the head (the first element) and tail (the remaining ones) from a list:
+Now the sides did not match, so we got an error. We use pattern matching in Elixir to match data structures too. For example, we can use `[head|tail]` to extract the head (the first element) and tail (the remaining ones) from a list:
 
 ```iex
 iex> [head|tail] = [1, 2, 3]
@@ -352,7 +352,7 @@ iex> Portal.Door.get(:blue)
 
 Our portal transfer seems to work as expected. Note that the data is in reverse order in the left/orange door in the example above. That is expected because we want the end of the list (in this case the number 3) to be the first data pushed into the right/blue door.
 
-One difference in the snippet above, compared to the one we saw earlier, is that our portal is currently being printed as a struct: `%Portal{left: :orange, right: blue}`. It would be nice if we actually had a printed representation of the portal transfer, allowing us to see the portal process as we push data.
+One difference in the snippet above, compared to the one we saw at the beginning of this tutorial, is that our portal is currently being printed as a struct: `%Portal{left: :orange, right: blue}`. It would be nice if we actually had a printed representation of the portal transfer, allowing us to see the portal process as we push data.
 
 That's what we will do next.
 
@@ -362,7 +362,7 @@ We already know that data can be printed in `iex`. After all, when we type `1 + 
 
 Yes, we can! Elixir provides protocols, which allows behaviour to be extended and implemented for any data type, like our `Portal` struct, at any time.
 
-For example, every time something is printed in our `iex` terminal, Elixir uses something called the `Inspect` protocol. Since protocols can be extended at any time, by any data type, it means we can implement it for `Portal` too. Open up `lib/portal.ex` and, at the end of the file, outside the `Portal` module, add the following:
+For example, every time something is printed in our `iex` terminal, Elixir uses the `Inspect` protocol. Since protocols can be extended at any time, by any data type, it means we can implement it for `Portal` too. Open up `lib/portal.ex` and, at the end of the file, outside the `Portal` module, add the following:
 
 ```elixir
 defimpl Inspect, for: Portal do
