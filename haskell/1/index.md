@@ -11,11 +11,11 @@ The most popular compiler for Haskell is `GHC` and you use `Cabal` alongside `GH
 
 To get GHC and Cabal installed, use one of the following links:
 
-* Windows: [http://www.haskell.org/platform/windows.html](http://www.haskell.org/platform/windows.html)
+* Windows: [https://www.haskell.org/downloads/windows](https://www.haskell.org/downloads/windows)
 
-* OS X: [http://new-www.haskell.org/downloads/osx](http://new-www.haskell.org/downloads/osx)
+* OS X: [https://www.haskell.org/downloads/osx](https://www.haskell.org/downloads/osx)
 
-* Linux: [http://new-www.haskell.org/downloads/linux](http://new-www.haskell.org/downloads/linux)
+* Linux: [https://www.haskell.org/downloads/linux](https://www.haskell.org/downloads/linux)
 
 After you've finished the install instructions, `ghc`, `cabal`, and `ghci` should all be in your path. `ghci` is the REPL (read-eval-print loop) for Haskell, though as often as not, you'll use `cabal repl` to invoke a REPL that is aware of your project and its dependencies.
 
