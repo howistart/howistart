@@ -41,6 +41,14 @@ $ bin/nim c koch
 $ ./koch boot -d:release
 ```
 
+This way you get a development version of Nim. To keep it up to date these two
+steps should be enough:
+
+```bash
+$ git pull
+$ ./koch boot -d:release
+```
+
 If you haven't done so already, now is a good time to install `git` as well.
 Most nimble packages are available on github, so we will need `git` to get
 them. On a Debian based distribution (like Ubuntu) we can install it like this:
@@ -53,7 +61,7 @@ After you've finished the installation, you should add the `nim` binary to your
 path. If you use bash, this is what to do:
 
 ```
-$ export PATH=$PATH:$your_install_dir/bin >> ~/.profile
+$ echo 'export PATH=$PATH:$your_install_dir/bin' >> ~/.profile
 $ source ~/.profile
 $ nim
 Nim Compiler Version 0.10.2 (2014-12-29) [Linux: amd64]
@@ -88,7 +96,7 @@ $ nim c -r src/nimble install
 Nimble's binary directory wants to be added to your path as well:
 
 ```
-$ export PATH=$PATH:$HOME/.nimble/bin >> ~/.profile
+$ echo 'export PATH=$PATH:$HOME/.nimble/bin' >> ~/.profile
 $ source ~/.profile
 $ nimble update
 Downloading package list from https://github.com/nim-lang/packages/raw/master/packages.json
