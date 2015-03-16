@@ -93,4 +93,133 @@ Tests failed.
 
 ```
 
-Fantastic.  Our project is all set up.  We are ready to _jack-in_ and start coding.
+Fantastic.  Our project is all set up.  We are ready to _jack-in_ with Emacs and Cider and start coding.
+
+
+## Cider Jack In and Experiment
+Here is where we start to use the interactive nature of Clojure and Emacs in earnest.  With the _generator.clj_ file open in Emacs, type `M-x cider-jack-in`.
+This will start a nREPL server for our project, so we can actively start to experiment with our code.  This early stage is a bit like playing with putty before sculpting.  It allows
+us to quickly try out different approaches and get a feel for data constructs to use.  For example, type into `generator.clj` the line:
+
+```clojure
+(+ 1 1)
+```
+
+At this point, you can put your cursor at the end of the form and hit `C-x C-e` you will see the result `2` appear in the mini-buffer at the bottom of the screen.
+
+Now, we are ready to experiment with Markov Chains.  The first thing we need is some small example to play with.  Consider the following text.
+
+```
+"And the Golden Grouse And the Pobble who"
+```
+
+To construct a Markov Chain, we need to transform this text into a chain of prefixes and suffixes.  In Markov chains, the length of the prefix can vary.  The larger the prefix, the more predictable the text becomes, while the smaller the prefix size, the moare random.  In this case, we are going to use a prefix size of 2.  We want to break up the original text into chunks of two words.  The suffix is the next word that comes after.
+
+| Prefix        | Suffix
+| ------------- |:-------------
+| And the      | Golden
+| the Golden   | Grouse
+| Grouse And   | the
+| And the      | Pobble
+| the Pobble   | who
+| Pobble who   | nil
+
+
+This table becomes a guide for us in walking the chain to generate new text.  If we start at a random place in the table, we can generate some text by following some simple rules.
+
+
+1. Choose a prefix to start.  Your result string starts as this prefix.
+1. Take the suffix that goes with the prefix.  Add the suffix to your result string. Also, Add the last word of the prefix to the suffix, this is your new prefix.
+1. Look up your new prefix in the table and continue until there is no suffix.
+1. The result string is your generated text.
+
+From our table, let's start with the prefix _the Pobble_.
+
+1.  Our starting prefix is "the Pobble".  Our result string will be intialized to it.
+1.  Look up the prefix in the table.  The suffix that goes with it is "who".  Add the suffix to the result string. The new prefix is the last word from the prefix and the suffix.  So the new prefix is "Pobble who".
+1.  Lookup up the prefix in the table, the suffix is nil.  This means we have reached the end of the chain.  Our resulting text is "the Pobble who"
+
+Things get interesting when there is more than one entry for a prefix.  Notice that _And the_ is in the table twice.  This means that there is a choice of what entry to use and what suffix.  We can randomly choose which one to use in our Markov Chain walk.  As a result, our text will be randomly generated. If start with the prefix _And the_ we have different  possibilities for the resulting text.  It could be
+
+* And the Pobble who
+* And the Golden Grouse And the Pobble who
+* And the Golden Grouse And the Golden Grouse And the Pobble who
+* And the Golden Grouse And the Golden Grouse And the Golden Grouse And the Pobble who 
+* etc...
+
+Since we could get into repeating chains, we should also put a terminating condition of the total length of our resulting text as well.
+
+Now that we know the general idea of what we want to do, let's start small and start experimenting.
+
+### Baby steps
+
+First, let's take our example text and put it into code to play with in the REPL.
+
+```clojure
+(def example "And the Golden Grouse And the Pobble who")
+;; -> #'markov-elear.core/example
+```
+
+Now, we are going to want to split up this text by spaces. This is a job for `clojure.string/split`.
+
+```clojure
+(def words (clojure.string/split example #" "))
+words
+;; -> ["And" "the" "Golden" "Grouse" "And" "the" "Pobble" "who"]
+```
+
+
+We also need to divide up these words in chunks of 3.  Clojure's `partition-all` will be perfect for this.  We are going to parition the word list in chunks of three.
+
+```clojure
+(def word-transitions (partition-all 3 1 words))
+word-transitions
+;; -> (("And" "the" "Golden")
+;;     ("the" "Golden" "Grouse")
+;;     ("Golden" "Grouse" "And")
+;;     ("Grouse" "And" "the")
+;;     ("And" "the" "Pobble")
+;;     ("the" "Pobble" "who")
+;;     ("Pobble" "who")
+;;     ("who"))
+
+
+This is nice, but we really need to get it into a word-chain format.  Ideally it would a map with the prefixes as the key and then have a set of suffixes to choose from.  So that the prefix of _And the_ would look like
+
+```clojure
+{["And" "the"]} #{"Pobble" "Golden"}
+```
+
+A map with the key being the vector of prefix words and the value being the set of suffixes.
+
+We are clearly going to need to map through the list of word-transitions and build this up somehow.  Perhaps `merge-with` will help us out.
+
+```clojure
+(merge-with concat {:a [1]} {:a [3]})
+;; -> {:a (1 3)}
+```
+
+`merge-with` will allow us to combine the prefixes with multiple suffixes in a map form, but we really want it in a set.  Time to experment some more.
+
+```clojure
+(merge-with clojure.set/union {:a #{1}} {:a #{2}})
+;; -> {:a #{1 2}}
+```
+
+Yes, that will do nicely.  Let's try this out in a `reduce` over the `word-transitions`.
+
+```clojure
+(reduce (fn [r t] (merge-with clojure.set/union r
+                               (let [[a b c] t]
+                                 {[a b] (if c #{c} #{})})))
+          {}
+          word-transitions)
+;; {["who" nil] #{},
+;;  ["Pobble" "who"] #{},
+;;  ["the" "Pobble"] #{"who"},
+;;  ["Grouse" "And"] #{"the"},
+;;  ["Golden" "Grouse"] #{"And"},
+;;  ["the" "Golden"] #{"Grouse"},
+;;  ["And" "the"] #{"Pobble" "Golden"}}
+```
+
