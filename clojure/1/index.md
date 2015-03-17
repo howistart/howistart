@@ -68,7 +68,7 @@ Change the namespace in the test to match the filename as well.
 ```clojure
 (ns markov-elear.generator-test
   (:require [clojure.test :refer :all]
-            [foobar.core :refer :all]))
+            [markov-elear.generator :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
@@ -222,4 +222,159 @@ Yes, that will do nicely.  Let's try this out in a `reduce` over the `word-trans
 ;;  ["the" "Golden"] #{"Grouse"},
 ;;  ["And" "the"] #{"Pobble" "Golden"}}
 ```
+
+## Tangible turn to tests
+
+We have been experimenting in the REPL, but now that we have a feel for where we are going it is time to write some tests.
+I really like to use the [lein-test-refesh plugin](https://github.com/jakemcc/lein-test-refresh).  It will continually rerun the tests whenever we change something in our files.  I find the feedback loop is much faster then running `lein test` alone.  It also takes care of reloading all the namespaces for you, so I don't run into problems where my REPL enviornment gets out of sync with my code. To add it to your project, simply add the following to your _project.clj_ file.
+
+```clojure
+:profiles {:dev {:plugins [[com.jakemccrary/lein-test-refresh "0.7.0"]]}}
+```
+
+Now, you can start it up from your prompt by running
+
+```
+lein test-refresh
+```
+
+First, let's get rid of the sample test and replace it with a real one.  We want this test to be about the word chain that we were experimenting with.  Add this to your _generator_test.clj_ file.
+
+```clojure
+(ns markov-elear.generator-test
+  (:require [clojure.test :refer :all]
+            [markov-elear.generator :refer :all]))
+
+(deftest test-word-chain
+  (testing "it produces a chain of the possible two step transitions between suffixes and prefixes"
+    (let [example '(("And" "the" "Golden")
+                    ("the" "Golden" "Grouse")
+                    ("And" "the" "Pobble")
+                    ("the" "Pobble" "who"))]
+      (is (= {["the" "Pobble"] #{"who"}
+              ["the" "Golden"] #{"Grouse"}
+              ["And" "the"] #{"Pobble" "Golden"}}
+             (word-chain example))))))
+```
+
+As you save the file, you will notice the test failing in your `lein test-refresh` window.  This is because we haven't written the _word-chain_ function yet.  After all of our experimentation, we know exactly what we need to do.  Add the following function to your _generator.clj_ file.
+
+```clojure
+(defn word-chain [word-transitions]
+  (reduce (fn [r t] (merge-with set/union r
+                               (let [[a b c] t]
+                                 {[a b] (if c #{c} #{})})))
+          {}
+          word-transitions))
+```
+
+Your test should now pass.
+
+Now that we have our word-chain, we are going to need a way to walk the chain, given a beginning prefix, and come up with our resulting text.  Going back to our test file _generator_test.clj_, add a new test for a `walk-chain` function that we want:
+
+```clojure
+(deftest test-walk-chain
+  (let [chain {["who" nil] #{},
+               ["Pobble" "who"] #{},
+               ["the" "Pobble"] #{"who"},
+               ["Grouse" "And"] #{"the"},
+               ["Golden" "Grouse"] #{"And"},
+               ["the" "Golden"] #{"Grouse"},
+               ["And" "the"] #{"Pobble" "Golden"}}]
+    (testing "dead end"
+      (let [prefix ["the" "Pobble"]]
+        (is (= ["the" "Pobble" "who"]
+               (walk-chain prefix chain prefix)))))))
+
+```
+
+Given a the starting prefix of `["the" "Pobble"]`, it will walk our chain until it reaches the a dead end of there
+being no more suffixes.  The result should be ` ["the" "Pobble" "who"]`.
+
+Going back to our _generator.clj_ file, we can start constructing a function to do this
+
+```clojure
+(defn walk-chain [prefix chain result]
+  (let [suffixes (get chain prefix)]
+    (if (empty? suffixes)
+      result
+      (let [suffix (first (shuffle suffixes))
+            new-prefix [(last prefix) suffix]]
+        (recur new-prefix chain (conj result suffix)))))
+```
+
+It takes the prefix and get the suffixes associated with it.  If there are no suffixes, it terminates and returns the result.
+Otherwise, it uses `rand-int` to pick a suffix.  Then it constructs the new prefix from the last part of the current prefix and the suffix. Finally, it recurs into the function using the `new-prefix` and adding the suffix to the result.
+
+We have another passing test, but we still need to consider the other walking of the chain where it has a choice.  Go ahead and add a test for that now too.
+
+```clojure
+(deftest test-walk-chain
+  (let [chain {["who" nil] #{},
+               ["Pobble" "who"] #{},
+               ["the" "Pobble"] #{"who"},
+               ["Grouse" "And"] #{"the"},
+               ["Golden" "Grouse"] #{"And"},
+               ["the" "Golden"] #{"Grouse"},
+               ["And" "the"] #{"Pobble" "Golden"}}]
+    (testing "dead end"
+      (let [prefix ["the" "Pobble"]]
+        (is (= ["the" "Pobble" "who"]
+               (walk-chain prefix chain prefix)))))
+    (testing "multiple choices"
+      (with-redefs [shuffle (fn [c] c)]
+        (let [prefix ["And" "the"]]
+          (is (= ["And" "the" "Pobble" "who"]
+                 (walk-chain prefix chain prefix))))))))
+```
+
+Because we have randomness to deal with, we can use `with-redefs` to redefine `shuffle` to always return the original collection for us.  We also need to deal with repeating chains.  We will have to give it another termination condition, like a word or character length for termination. Since our bot is destined for twitter, a 140 char limit seems reasonable.
+
+```clojure
+(deftest test-walk-chain
+  (let [chain {["who" nil] #{},
+               ["Pobble" "who"] #{},
+               ["the" "Pobble"] #{"who"},
+               ["Grouse" "And"] #{"the"},
+               ["Golden" "Grouse"] #{"And"},
+               ["the" "Golden"] #{"Grouse"},
+               ["And" "the"] #{"Pobble" "Golden"}}]
+    (testing "dead end"
+      (let [prefix ["the" "Pobble"]]
+        (is (= ["the" "Pobble" "who"]
+               (walk-chain prefix chain prefix)))))
+    (testing "multiple choices"
+      (with-redefs [shuffle (fn [c] c)]
+        (let [prefix ["And" "the"]]
+          (is (= ["And" "the" "Pobble" "who"]
+                 (walk-chain prefix chain prefix))))))
+    (testing "repeating chains"
+      (with-redefs [shuffle (fn [c] (reverse c))]
+        (let [prefix ["And" "the"]]
+          (is (> 140
+                 (count (apply str (walk-chain prefix chain prefix)))))
+          (is (= ["And" "the" "Golden" "Grouse" "And" "the" "Golden" "Grouse"]
+                 (take 8 (walk-chain prefix chain prefix)))))))))
+```
+
+Adjusting our function in _generator.clj_
+
+```clojure
+(defn walk-chain [prefix chain result]
+  (let [suffixes (get chain prefix)]
+    (if (empty? suffixes)
+      result
+      (let [suffix (first (shuffle suffixes))
+            new-prefix [(last prefix) suffix]
+            result-char-count (count (apply str result))
+            suffix-char-count (count suffix)
+            new-result-char-count (+ result-char-count suffix-char-count)]
+        (if (> new-result-char-count 140)
+          result
+          (recur new-prefix chain (conj result suffix)))))))
+```
+
+We check the `result-char-count` and the chosen `suffix-char-count` before we recur, so that we can ensure that
+it doesn't go over 140 chars.
+
 
