@@ -238,7 +238,11 @@ Now, you can start it up from your prompt by running
 lein test-refresh
 ```
 
-First, let's get rid of the sample test and replace it with a real one.  We want this test to be about the word chain that we were experimenting with.  Add this to your _generator_test.clj_ file.
+First, let's get rid of the sample test and replace it with a real one.  We want this test to be about the word chain that we were experimenting with.
+
+### Building the Word Chain
+
+Add this to your _generator_test.clj_ file.
 
 ```clojure
 (ns markov-elear.generator-test
@@ -270,7 +274,38 @@ As you save the file, you will notice the test failing in your `lein test-refres
 
 Your test should now pass.
 
-Now that we have our word-chain, we are going to need a way to walk the chain, given a beginning prefix, and come up with our resulting text.  Going back to our test file _generator_test.clj_, add a new test for a `walk-chain` function that we want:
+
+What about generating the word chain from an string of text?  When we were experimenting in the REPL, we saw that using `parition-all` was going to be useful.  Let's add a test for that now in _generator_test.clj_.  We want to parse an input string that has spaces or new lines.
+
+```clojure
+(deftest test-text->word-chain
+  (testing "string with spaces and newlines"
+    (let [example "And the Golden Grouse\nAnd the Pobble who"]
+     (is ( = {["who" nil] #{}
+              ["Pobble" "who"] #{}
+              ["the" "Pobble"] #{"who"}
+              ["Grouse" "And"] #{"the"}
+              ["Golden" "Grouse"] #{"And"}
+              ["the" "Golden"] #{"Grouse"}
+              ["And" "the"] #{"Pobble" "Golden"}}
+             (text->word-chain example))))))
+```
+
+To make it pass, add the `text->word-chain` function in the _generator_test.clj_. 
+
+```clojure
+(defn text->word-chain [s]
+  (let [words (clojure.string/split s #"[\s|\n]")
+        word-transitions (partition-all 3 1 words)]
+    (word-chain word-transitions)))
+```
+
+
+Now that we have our word-chain, we are going to need a way to walk the chain, given a beginning prefix, and come up with our resulting text.
+
+### Random Walking the Chain
+
+Going back to our test file _generator_test.clj_, add a new test for a `walk-chain` function that we want:
 
 ```clojure
 (deftest test-walk-chain
@@ -357,24 +392,84 @@ Because we have randomness to deal with, we can use `with-redefs` to redefine `s
                  (take 8 (walk-chain prefix chain prefix)))))))))
 ```
 
-Adjusting our function in _generator.clj_
+Adjusting our _generator.clj_, we first need a helper function that will turn our result chain into a string with spaces, so that we can count the chars and make sure that they are under the limit.  We will call it `chain->text`.
 
 ```clojure
+(defn chain->text [chain]
+  (apply str (interpose " " chain)))
+```
+
+It takes a chain like `["And" "the" "Pobble" "who"]` and gives us back the display text.
+
+```clojure
+(chain->text `["And" "the" "Pobble" "who"])
+;; -> "And the Pobble who"
+```
+
+Now we can add the char limit counting to our `walk-chain` function.
+
+```clojure
+(defn chain->text [chain]
+  (apply str (interpose " " chain)))
+
 (defn walk-chain [prefix chain result]
   (let [suffixes (get chain prefix)]
     (if (empty? suffixes)
       result
       (let [suffix (first (shuffle suffixes))
             new-prefix [(last prefix) suffix]
-            result-char-count (count (apply str result))
-            suffix-char-count (count suffix)
+            result-with-spaces (chain->text result)
+            result-char-count (count result-with-spaces)
+            suffix-char-count (+ 1 (count suffix))
             new-result-char-count (+ result-char-count suffix-char-count)]
-        (if (> new-result-char-count 140)
+        (if (>= new-result-char-count 140)
           result
           (recur new-prefix chain (conj result suffix)))))))
 ```
 
 We check the `result-char-count` and the chosen `suffix-char-count` before we recur, so that we can ensure that
-it doesn't go over 140 chars.
+it doesn't go over 140 chars.  If it is going to go over the limit, we return the result and do not `recur`.
 
+What we need now is another higher level function that will allow us ,given a prefix and a word chain, return the resulting text.
+
+### Taking A Start Text Phrase, Walking the Chain, and Returning Text.
+
+
+Going back to the _generator_test.clj_ file, let's go ahead and write the test.  We will use `with-redefs` again to control our randomness.
+
+```clojure
+(deftest test-generate-text
+  (with-redefs [shuffle (fn [c] c)]
+    (let [chain {["who" nil] #{}
+                 ["Pobble" "who"] #{}
+                 ["the" "Pobble"] #{"who"}
+                 ["Grouse" "And"] #{"the"}
+                 ["Golden" "Grouse"] #{"And"}
+                 ["the" "Golden"] #{"Grouse"}
+                 ["And" "the"] #{"Pobble" "Golden"}}]
+      (is (= "the Pobble who" (generate-text "the Pobble" chain)))
+      (is (= "And the Pobble who" (generate-text "And the" chain))))))
+```
+
+
+To make the test pass in our _generator.clj_ file, we create the function that will take a start-phrase as a prefix and a word chain.
+Then it will split the start-phrase by spaces, so that it will match up to our prefix keys.  Next, it will use `walk-chain` to get the resulting text chain.  Finally, it will turn the result text chain into plain text with `chain->text`.
+
+
+```clojure
+(defn text->word-chain [s]
+  (let [words (clojure.string/split s #"[\s|\n]")
+        word-transitions (partition-all 3 1 words)]
+    (word-chain word-transitions)))
+```
+
+Taking a moment to recap, this is what we have so far:
+
+* We can take string, parse it and turn it into a word chain.
+* We can take an input phrase and word chain and generate some new text by taking a random walk in the chain.
+
+
+What we are missing is a way to _train_ our bot, by reading in some files of text and building out the chain that it will walk.
+
+### Training the bot by reading input files
 
