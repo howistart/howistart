@@ -572,7 +572,7 @@ Giving it a try now.
 ;; -> "On the broad green leaves of the list. Under lazy evaluation,
 ;;    the length function will return a new monadic value.
 ;;    The bind operation takes"
-
+```
 
 Now we are having fun :)
 
