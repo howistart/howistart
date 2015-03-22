@@ -473,3 +473,169 @@ What we are missing is a way to _train_ our bot, by reading in some files of tex
 
 ### Training the bot by reading input files
 
+    To _train_ our bot, we need to be able to give it a text file and have it turn it into a word chain.  Our first text selection will be from [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle).
+
+    Making it easier on ourselves, we will do some slight formatting of the text and the save it to a _resources_ directory off of our home project directory, in a file called _quangle-wangle.text_.
+
+```
+On the top of the Crumpetty Tree
+The Quangle Wangle sat,
+But his face you could not see,
+On account of his Beaver Hat.
+For his Hat was a hundred and two feet wide,
+With ribbons and bibbons on every side,
+And bells, and buttons, and loops, and lace,
+So that nobody ever could see the face
+Of the Quangle Wangle Quee.
+The Quangle Wangle said
+To himself on the Crumpetty Tree,
+"Jam, and jelly, and bread
+Are the best of food for me!
+But the longer I live on this Crumpetty Tree
+The plainer than ever it seems to me
+That very few people come this way
+And that life on the whole is far from gay!"
+Said the Quangle Wangle Quee.
+But there came to the Crumpetty Tree
+Mr. and Mrs. Canary;
+And they said, "Did ever you see
+Any spot so charmingly airy?
+May we build a nest on your lovely Hat?
+Mr. Quangle Wangle, grant us that!
+O please let us come and build a nest
+Of whatever material suits you best,
+Mr. Quangle Wangle Quee!"
+And besides, to the Crumpetty Tree
+Came the Stork, the Duck, and the Owl;
+The Snail and the Bumble-Bee,
+The Frog and the Fimble Fowl
+(The Fimble Fowl, with a Corkscrew leg);
+And all of them said, "We humbly beg
+We may build our homes on your lovely Hat,--
+Mr. Quangle Wangle, grant us that!
+Mr. Quangle Wangle Quee!"
+And the Golden Grouse came there,
+And the Pobble who has no toes,
+And the small Olympian bear,
+And the Dong with a luminous nose.
+And the Blue Baboon who played the flute,
+And the Orient Calf from the Land of Tute,
+And the Attery Squash, and the Bisky Bat,--
+All came and built on the lovely Hat
+Of the Quangle Wangle Quee.
+And the Quangle Wangle said
+To himself on the Crumpetty Tree,
+"When all these creatures move
+What a wonderful noise there'll be!"
+And at night by the light of the Mulberry moon
+They danced to the Flute of the Blue Baboon,
+On the broad green leaves of the Crumpetty Tree,
+And all were as happy as happy could be,
+With the Quangle Wangle Quee.    
+```
+
+We can now use `clojure.java.io/resource` to open the file and `slurp` to turn it into a string. From there, we can simply use our `text->word-chain` function to transform it into the word chain that we need.
+
+
+```clojure
+(defn process-file [fname]
+  (text->word-chain
+   (slurp (io/resource fname))))
+
+
+(generate-text "And the" (process-file "quangle-wangle.txt"))
+;; -> "And the Attery Squash, and the Bumble-Bee,
+;;     The Frog and the Bisky Bat,-- All came and built on the
+;;     Crumpetty Tree
+;;     The plainer than ever it"
+```
+
+Great!  We just need to add some more text files.  We will add some more Edward Lear Poems, As well as some text from wikipedia on Functional Programming.
+
+* [The Project Gutenberg eBook, Nonsense Books, by Edward Lear](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm)
+* [http://en.wikipedia.org/wiki/Monad_(functional_programming)](http://en.wikipedia.org/wiki/Monad_(functional_programming)
+* [http://en.wikipedia.org/wiki/Functional_programming](http://en.wikipedia.org/wiki/Functional_programming)
+* [http://en.wikipedia.org/wiki/Clojure](http://en.wikipedia.org/wiki/Clojure)
+
+After we have chosen our text selections, we define a list of input files and the finalchain that is the result of all the processed text.
+
+```clojure
+(def files ["quangle-wangle.txt" "monad.txt" "clojure.txt" "functional.txt"
+            "jumblies.txt" "pelican.txt" "pobble.txt"])
+(def functional-leary (apply merge-with clojure.set/union (map process-file files)))
+```
+
+Giving it a try now.
+
+```clojure
+(generate-text "On the" functional-leary)
+;; -> "On the broad green leaves of the list. Under lazy evaluation,
+;;    the length function will return a new monadic value.
+;;    The bind operation takes"
+
+
+Now we are having fun :)
+
+## Artistic tweaking
+
+Here is when it turns to artistic tweaking.  I want to hand select a few entry prefixes, so that the text generated will tend to start out sounding like Edward Lear and have functional text mixed in.
+
+
+```clojure
+(def prefix-list ["On the" "They went" "And all" "We think"
+                  "For every" "No other" "To a" "And every"
+                  "We, too," "For his" "And the" "But the"
+                  "Are the" "The Pobble" "For the" "When we"
+                  "In the" "Yet we" "With only" "Are the"
+                  "Though the"  "And when"
+                  "We sit" "And this" "No other" "With a"
+                  "And at" "What a" "Of the"
+                  "O please" "So that" "And all" "When they"
+                  "But before" "Whoso had" "And noboby" "And it's"
+                  "For any" "Formally a" "For example," "Also in" "In contrast"])
+```
+
+Also, I want to fix a bit of the punctuation of the generated text.  In particular, I want to trim the text to the last punctuation in the text.  Then, if it ends in a comma, I want to replace it with a period.  I also want to clean up an quotes that get escaped in the text.
+
+Adding a test for that in our _generator_test.clj_ file:
+
+```clojure
+(deftest test-end-at-last-puntcuation
+  (testing "Ends at the last puncuation"
+    (is (= "In a tree so happy are we."
+           (end-at-last-punctuation "In a tree so happy are we. So that")))
+    (testing "Replaces ending comma with a period"
+    (is (= "In a tree so happy are we."
+           (end-at-last-punctuation "In a tree so happy are we, So that"))))))
+```
+
+We can make this test pass in our _generator.clj_ file, by using some string and regex functions.
+
+```clojure
+(defn end-at-last-punctuation [text]
+  (let [trimmed-text (apply str (re-seq #"[\s\w]+[^.!?,]*[.!?,]" text))
+        cleaned-text (clojure.string/replace trimmed-text #",$" ".")]
+    (clojure.string/replace cleaned-text #"\"" "'")))
+```
+
+Using this, we can now make a `tweet-text` function that will randomly choose a prefix from our prefix list and generate our mashup text.
+
+
+```clojure
+(defn tweet-text []
+  (let [text (generate-text (-> prefix-list shuffle first) functional-leary)]
+    (end-at-last-punctuation text)))
+
+(tweet-text)
+;; -> "With a wreath of shrimps in her short white hair.
+;;     And before the end of this period Hickey sent an email
+;;     announcing the language Hope."
+
+```
+
+Alright, that last one made me smile.
+
+We now have a function that will generate tweets for us.  The next step is to hook it up to a Twitter account so that we can share our smiles with the world.
+
+## Hooking the bot up to Twitter
+
