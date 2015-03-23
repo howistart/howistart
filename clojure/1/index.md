@@ -770,4 +770,84 @@ At this point our program is complete.  We could happily leave it running locall
 
 ## Deploying to Heroku
 
+The first thing you will need to do is to create an account on Heroku.  It is free of charge.  You can create your login at https://signup.heroku.com/dc[https://signup.heroku.com/dc].
+
+Next, you will need the _Heroku Toolbelt_.  This gives you a nice command line tool to configure and deploy applications.  You can download it from https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up[https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up].
+
+Once you have downloaded the tool, you will need to configure it with your username and password.  You can do this at the command line by typing *+heroku login+*. You will be prompted for your email and password.
+
+----
+-> heroku login
+Enter your Heroku credentials.
+Email:
+Password:
+----
+
+Now you are all set to configure your project.
+
+If you haven't initialized it yet as a git repo, do so with
+
+----
+git init
+----
+
+After that, we need to tell Heroku how to start up our app.  We do this with a _Procfile_ in the main project directory. Go ahead and add the file with the following contents.
+
+```
+worker: lein run trampoline
+```
+
+This will tell Heroku to run our program as a background worker, (rather than a web app), and start it up with `lein run trampoline`.
+
+The next step is to create an app on Heroku for it.  This will get Heroku ready to receive your code for deployment.
+Type *+heroku create+* into your command prompt at the root of the _cheshire-cat_ project.  You will see.
+
+
+----
+-> heroku create
+Creating calm-reaches-2803... done, stack is cedar-14
+https://calm-reaches-2803.herokuapp.com/ | https://git.heroku.com/calm-reaches-2803.git
+Git remote heroku added
+----
+
+It created a random application name for you, (which you can rename later through the console).
+It also added a repository called _heroku_ to our git config.  Once we push our code here, it will automatically deploy.
+
+You will also need to setup your Twitter creditionals on the Heroku account so it will be able to talk to it.  You can do this with [heroku config](https://devcenter.heroku.com/articles/config-vars).
+
+You need to do a command line `heroku config` for each one of our configurations:
+
+```
+heroku config:set APP_CONSUMER_KEY=foo
+heroku config:set APP_CONSUMER_SECRET=bar
+heroku config:set USER_ACCESS_TOKEN=foo2
+heroku config:set USER_ACCESS_SECRET=bar2
+```
+
+Finally, we can push all of our changes to Heroku with:
+
+```
+git push heroku master
+```
+
+You should see it deploy and tweet for you!
+
+
+We have successfully created and deployed a markov bot that will tweet for us.  Let's recap what we have done so far.
+
+## Summary
+
+* Use Emacs REPL integration to play and experiment with the code.  This is what I call an early sculpting with code phase,  or REPL Driven Development.
+* As soon as we have a good idea where we are headed, switch into a more Test Driven Development cycle with the _lein-test-refresh_ plugin.
+* Create the core of our code to generate and walk our Markov Chain.
+* Create ways to parse input text files to _train_ our bot on.
+* Artistically select some entry points into our chain using prefixs.  Also artistically, fix up the puncuation of the resulting text.
+* Set up a Twitter account.
+* Use the _environ_ library to handle our environment specific twitter configuration.
+* Use the _twitter-api_ libray to talk to the twitter account
+* Use the _at-at_ library to schedule a job periodically to tweet for us.
+* Deploy the application to Heroku.
+
+
+I hope you have enjoyed our Clojure bot creating journey.  I encourage you to experiment and create your own _art bots_ and,  of course, to continue to explore and enjoy the wonderful world of Clojure.
 
