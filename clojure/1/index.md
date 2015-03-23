@@ -595,7 +595,7 @@ Here is when it turns to artistic tweaking.  I want to hand select a few entry p
                   "For any" "Formally a" "For example," "Also in" "In contrast"])
 ```
 
-Also, I want to fix a bit of the punctuation of the generated text.  In particular, I want to trim the text to the last punctuation in the text.  Then, if it ends in a comma, I want to replace it with a period.  I also want to clean up an quotes that get escaped in the text.
+Also, I want to fix a bit of the punctuation of the generated text.  In particular, I want to trim the text to the last punctuation in the text.  Then, if it ends in a comma, I want to replace it with a period. If there is no puncation, I want to drop the last word and add a period.  I also want to clean up an quotes that get escaped in the text.
 
 Adding a test for that in our _generator_test.clj_ file:
 
@@ -606,15 +606,22 @@ Adding a test for that in our _generator_test.clj_ file:
            (end-at-last-punctuation "In a tree so happy are we. So that")))
     (testing "Replaces ending comma with a period"
     (is (= "In a tree so happy are we."
-           (end-at-last-punctuation "In a tree so happy are we, So that"))))))
+           (end-at-last-punctuation "In a tree so happy are we, So that"))))
+    (testing "If there are no previous puncations, just leave it alone and add one at the end"
+      (is ( = "In the light of the blue moon."
+              (end-at-last-punctuation  "In the light of the blue moon there"))))))
 ```
 
 We can make this test pass in our _generator.clj_ file, by using some string and regex functions.
 
 ```clojure
 (defn end-at-last-punctuation [text]
-  (let [trimmed-text (apply str (re-seq #"[\s\w]+[^.!?,]*[.!?,]" text))
-        cleaned-text (clojure.string/replace trimmed-text #",$" ".")]
+  (let [trimmed-to-last-punct (apply str (re-seq #"[\s\w]+[^.!?,]*[.!?,]" text))
+        trimmed-to-last-word (apply str (re-seq #".*[^a-zA-Z]+" text))
+        result-text (if (empty? trimmed-to-last-punct)
+                      trimmed-to-last-word
+                      trimmed-to-last-punct)
+        cleaned-text (clojure.string/replace result-text #"[,| ]$" ".")]
     (clojure.string/replace cleaned-text #"\"" "'")))
 ```
 
@@ -638,4 +645,129 @@ Alright, that last one made me smile.
 We now have a function that will generate tweets for us.  The next step is to hook it up to a Twitter account so that we can share our smiles with the world.
 
 ## Hooking the bot up to Twitter
+
+   To hook up our bot to twitter, you need to create a twitter account.  Once you do that, need to do the following:
+
+* Go to [https://apps.twitter.com/](https://apps.twitter.com/) to create new twitter application. You will want to set the permission so that it can post to the twitter account. This will give you a _Consumer Key (API Key)_ and a _Consumer Secret (API Secret)_.
+* Go  otthe the _Keys and Access Tokens_ section of the application.  On the bottom half there is a button that says _Create my access token_, click it.  It will generate two more key pieces of information for you: _Access Token_ and _Access Token Secret_.
+
+Please note that these setting are sensitive and should not be checked into github or shared publically.  To help make our twitter account access, we are going to need the help of two libraries.  The first is [twitter-api](https://github.com/adamwynne/twitter-api) that will help us make our api calls.  The second is [environ](https://github.com/weavejester/environ) that will help us keep our login information safe.
+
+Add both libraries to your _project.clj_
+
+```clojure
+ [twitter-api "0.7.8"]
+ [environ "1.0.0"]]
+```
+
+Also add the `lein-environ` plugin to your _project.clj_ as well.
+
+```clojure
+:plugins [[lein-environ "1.0.0"]]
+```
+
+The environ plugin allows us to pass configuration information from environment settings or a _profiles.clj_ file that can be ignored and not checked in.  Let's go ahead and add a _profiles.clj_ file to the root of our project and put in all our twitter account info.
+
+```clojure
+{:dev  {:env {:app-consumer-key "foo"
+              :app-consumer-secret "bar"
+              :user-access-token "foo2"
+              :user-access-secret "bar2"}}}
+```
+
+Also add both the twitter-api and the environ library to the project namespace in the _generator.clj_ file.
+
+```clojure
+(ns markov-elear.generator
+  (:require [twitter.api.restful :as twitter]
+            [twitter.oauth :as twitter-oauth]
+            [environ.core :refer [env]]))
+```
+
+This will allow us to define `my-creds` that will make our creditionals for our twitter app.
+
+```clojure
+(def my-creds (twitter-oauth/make-oauth-creds (env :app-consumer-key)
+                                              (env :app-consumer-secret)
+                                              (env :user-access-token)
+                                              (env :user-access-secret)))
+```
+
+
+Now that we can talk to our twitter account.  We can finally write a `status-update` function that will post our markov chain generated text.
+
+```clojure
+(defn status-update []
+  (let [tweet (tweet-text)]
+    (println "generated tweet is :" tweet)
+    (println "char count is:" (count tweet))
+    (when (not-empty tweet)
+      (try (twitter/statuses-update :oauth-creds my-creds
+                                    :params {:status tweet})
+           (catch Exception e (println "Oh no! " (.getMessage e)))))))
+
+```
+
+Giving it a try:
+
+```clojure
+(status-update)
+;; -> {.... :text "For example, the functions doesFileExist and
+;;                 removeFile in the 1980s
+;;                 in the nights of June."}}
+```
+
+![](http://c4.staticflickr.com/8/7617/16905225975_07da52ac87_b.jpg)
+
+Hurray! We are almost there.  We next need a way to run this status update on a periodic basis, having it post automatically for us.
+
+## Automating our tweets
+
+To have this run from the commnadd line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein run trampoline`.
+
+So first, modify the _project.clj_ file to have the _at-at_ library, as well as the main function for the namespace.
+
+```clojure
+ :dependencies [[org.clojure/clojure "1.6.0"]
+                 [overtone/at-at "1.2.0"]
+                 [twitter-api "0.7.8"]
+                 [environ "1.0.0"]]
+  :main markov-elear.generator
+  :min-lein-version "2.0.0"
+  :plugins [[lein-environ "1.0.0"]]
+  :profiles {:dev {:plugins [[com.jakemccrary/lein-test-refresh "0.7.0"]]}})
+```
+
+Then, going back to the _generator.clj_ file, define a pool for the scheduling process, and add in a `-main` function to tweet for us every 8 hours.
+
+```clojure
+(def my-pool (overtone/mk-pool))
+
+(defn -main [& args]
+  ;; every 8 hours
+  (println "Started up")
+  (println (tweet-text))
+  (overtone/every (* 1000 60 60 8) #(println (status-update)) my-pool))
+```
+
+Now we should be able to try this from the command line.
+
+```
+lein run trampoline
+```
+
+and see something like the following
+
+```
+Started up
+Are the best of food for me!
+generated tweet is : With only a beautiful pea-green veil Tied with a flumpy sound.
+char count is: 62
+{... :text With only a beautiful pea-green veil Tied with a flumpy sound.}
+```
+
+At this point our program is complete.  We could happily leave it running locally.  It is much better though, to deploy it somewhere.  [http://heroku.com/](http://heroku.com/) is a fantastic place for this.  It provides free hosting and has nice Clojure support.
+
+## Deploying to Heroku
+
 
