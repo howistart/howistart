@@ -1,16 +1,18 @@
-We are going to explore Clojure by creating a fun project together.  We are going to create a twitter bot that create its text based on a mashup of Edward Lear's poetry, ([The Project Gutenberg eBook, Nonsense Books, by Edward Lear](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm) ), and a goodly selection of functional programming text taken from Wikipedia.  Why Edward Lear and Functional Programming?  Well first, because I really enjoy his poetry. My children grew up with me reading his _Nonsense Songs_ to them.  His whimsical writings, like his contemporary Lewis Carroll, appeal to me.  I also enjoy functional programming, which to be honest, has quite a few terms in it that sound odd.  I feel that Edward Lear, if he had known about functional programming, would have incorporated words like _monad_ and _endofunctor_ in his poetry.  This bot, will bring these two spheres together.
+We are going to explore Clojure by creating a fun project together.  In particular, we will create a twitter bot that create its text based on a mashup of [Edward Lear's poetry] ((http://www.gutenberg.org/files/13650/13650-h/13650-h.htm) ), and a goodly selection of functional programming text taken from Wikipedia.
 
-To get started,  we will cover getting started with a basic Clojure project and editor.  Then, we will build up our tweet generator with a [Markov Chain](http://en.wikipedia.org/wiki/Markov_chain).  Finally, we will deploy our code to [Heroku](https://www.heroku.com/) and hook it up to a twitter account, where it will live and tweet on its own.
+Why Edward Lear and Functional Programming?  First, because I really enjoy his poetry. I fondly remember reading his poetry to my children.   Some of my favorite poems are [The Pobble Who Has No Toes](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#pobble), [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle), and [The Jumblies](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#jumblies).  The whimsical nature of his poetry, like his contemporary Lewis Carroll, have great appeal to me.  It is only natural that I should want to combine it with my other love, functional programming.  In fact, I feel that some of of terms in functional programming like _monad_ and _functor_,  could fit right in with Edward Lear's _Nonsense Songs_.  This humble bot, will aim to unite the spheres of functional programming and nonsense poetry.
 
-Since this tutorial is geared to explain how I work in particular, we will start my essential ingredient to any coding project ... _tea_.  I brew myself a cup of _PG Tips_ tea with a splash of milk, then I sit down and fire up my trusty editor _Emacs_.
+This tutorial will start with getting started with a basic Clojure project and editor.  Then,  build up our tweet generator with a [Markov Chain](http://en.wikipedia.org/wiki/Markov_chain).  Finally, we will deploy our code to [Heroku](https://www.heroku.com/) and hook it up to a twitter account, where it will live and tweet all on its own.
+
+Since this walk through is geared to explain how I work in particular, we will start my essential ingredient to any coding project ... _tea_.  I brew myself a cup of _PG Tips_ tea with a splash of milk, then I sit down and fire up my trusty editor _Emacs_.
 
 ## Emacs is a lifestyle
 
 Emacs is more than an editor, it is a lifestyle.  I also admit that the learning curve is steep.  I actually only know about 4% of Emacs. This is completely normal given that the learning curve for the editor looks like a squiggly curlicue.
 
-![](http://mrozekma.com/editor-learning-curve.png)
+![](http://c4.staticflickr.com/8/7598/16914999852_995b77a811_z.jpg)
 
-Nevertheless, once I started using it for Clojure and experienced the interactive nature of the code and the REPL, (Read Eval Print Loop), I was hooked.  I use a customized version of [Emacs Starter Kit](https://github.com/technomancy/emacs-starter-kit). I also find the [Solarized Colorscheme](https://github.com/sellout/emacs-color-theme-solarized) a must for my eyes. For Clojure code, I use [Cider for Emacs](https://github.com/clojure-emacs/cider), which gives me the incredible interactive code experience that I was mentioning.
+Nevertheless, once I started using it for Clojure and experienced the interactive nature of the code and the REPL, (Read Eval Print Loop), I was hooked.  I use a customized version of [Emacs Starter Kit](https://github.com/technomancy/emacs-starter-kit). I also find the [Solarized Color-scheme](https://github.com/sellout/emacs-color-theme-solarized) a must for my eyes. For Clojure code, I use [Cider for Emacs](https://github.com/clojure-emacs/cider), which gives me the incredible interactive code experience that I was mentioning.
 
 Now that we have our tea and emacs editor open, It is time to actually get our Clojure project created.  For this I use [Leiningen](http://leiningen.org/).
 
@@ -113,7 +115,7 @@ Now, we are ready to experiment with Markov Chains.  The first thing we need is 
 "And the Golden Grouse And the Pobble who"
 ```
 
-To construct a Markov Chain, we need to transform this text into a chain of prefixes and suffixes.  In Markov chains, the length of the prefix can vary.  The larger the prefix, the more predictable the text becomes, while the smaller the prefix size, the moare random.  In this case, we are going to use a prefix size of 2.  We want to break up the original text into chunks of two words.  The suffix is the next word that comes after.
+To construct a Markov Chain, we need to transform this text into a chain of prefixes and suffixes.  In Markov chains, the length of the prefix can vary.  The larger the prefix, the more predictable the text becomes, while the smaller the prefix size, the more random.  In this case, we are going to use a prefix size of 2.  We want to break up the original text into chunks of two words.  The suffix is the next word that comes after.
 
 | Prefix        | Suffix
 | ------------- |:-------------
@@ -135,9 +137,9 @@ This table becomes a guide for us in walking the chain to generate new text.  If
 
 From our table, let's start with the prefix _the Pobble_.
 
-1.  Our starting prefix is "the Pobble".  Our result string will be intialized to it.
+1.  Our starting prefix is "the Pobble".  Our result string will be initialized to it.
 1.  Look up the prefix in the table.  The suffix that goes with it is "who".  Add the suffix to the result string. The new prefix is the last word from the prefix and the suffix.  So the new prefix is "Pobble who".
-1.  Lookup up the prefix in the table, the suffix is nil.  This means we have reached the end of the chain.  Our resulting text is "the Pobble who"
+1.  Look up up the prefix in the table, the suffix is nil.  This means we have reached the end of the chain.  Our resulting text is "the Pobble who"
 
 Things get interesting when there is more than one entry for a prefix.  Notice that _And the_ is in the table twice.  This means that there is a choice of what entry to use and what suffix.  We can randomly choose which one to use in our Markov Chain walk.  As a result, our text will be randomly generated. If start with the prefix _And the_ we have different  possibilities for the resulting text.  It could be
 
@@ -169,7 +171,7 @@ words
 ```
 
 
-We also need to divide up these words in chunks of 3.  Clojure's `partition-all` will be perfect for this.  We are going to parition the word list in chunks of three.
+We also need to divide up these words in chunks of 3.  Clojure's `partition-all` will be perfect for this.  We are going to partition the word list in chunks of three.
 
 ```clojure
 (def word-transitions (partition-all 3 1 words))
@@ -199,7 +201,7 @@ We are clearly going to need to map through the list of word-transitions and bui
 ;; -> {:a (1 3)}
 ```
 
-`merge-with` will allow us to combine the prefixes with multiple suffixes in a map form, but we really want it in a set.  Time to experment some more.
+`merge-with` will allow us to combine the prefixes with multiple suffixes in a map form, but we really want it in a set.  Time to experiment some more.
 
 ```clojure
 (merge-with clojure.set/union {:a #{1}} {:a #{2}})
@@ -226,7 +228,7 @@ Yes, that will do nicely.  Let's try this out in a `reduce` over the `word-trans
 ## Tangible turn to tests
 
 We have been experimenting in the REPL, but now that we have a feel for where we are going it is time to write some tests.
-I really like to use the [lein-test-refesh plugin](https://github.com/jakemcc/lein-test-refresh).  It will continually rerun the tests whenever we change something in our files.  I find the feedback loop is much faster then running `lein test` alone.  It also takes care of reloading all the namespaces for you, so I don't run into problems where my REPL enviornment gets out of sync with my code. To add it to your project, simply add the following to your _project.clj_ file.
+I really like to use the [lein-test-refesh plugin](https://github.com/jakemcc/lein-test-refresh).  It will continually rerun the tests whenever we change something in our files.  I find the feedback loop is much faster then running `lein test` alone.  It also takes care of reloading all the namespaces for you, so I don't run into problems where my REPL environment gets out of sync with my code. To add it to your project, simply add the following to your _project.clj_ file.
 
 ```clojure
 :profiles {:dev {:plugins [[com.jakemccrary/lein-test-refresh "0.7.0"]]}}
@@ -557,7 +559,7 @@ Great!  We just need to add some more text files.  We will add some more Edward 
 * [http://en.wikipedia.org/wiki/Functional_programming](http://en.wikipedia.org/wiki/Functional_programming)
 * [http://en.wikipedia.org/wiki/Clojure](http://en.wikipedia.org/wiki/Clojure)
 
-After we have chosen our text selections, we define a list of input files and the finalchain that is the result of all the processed text.
+After we have chosen our text selections, we define a list of input files and the final chain that is the result of all the processed text.
 
 ```clojure
 (def files ["quangle-wangle.txt" "monad.txt" "clojure.txt" "functional.txt"
@@ -592,22 +594,22 @@ Here is when it turns to artistic tweaking.  I want to hand select a few entry p
                   "And at" "What a" "Of the"
                   "O please" "So that" "And all" "When they"
                   "But before" "Whoso had" "And noboby" "And it's"
-                  "For any" "Formally a" "For example," "Also in" "In contrast"])
+                  "For any" "For example," "Also in" "In contrast"])
 ```
 
-Also, I want to fix a bit of the punctuation of the generated text.  In particular, I want to trim the text to the last punctuation in the text.  Then, if it ends in a comma, I want to replace it with a period. If there is no puncation, I want to drop the last word and add a period.  I also want to clean up an quotes that get escaped in the text.
+Also, I want to fix a bit of the punctuation of the generated text.  In particular, I want to trim the text to the last punctuation in the text.  Then, if it ends in a comma, I want to replace it with a period. If there is no punctuation, I want to drop the last word and add a period.  I also want to clean up an quotes that get escaped in the text.
 
 Adding a test for that in our _generator_test.clj_ file:
 
 ```clojure
 (deftest test-end-at-last-puntcuation
-  (testing "Ends at the last puncuation"
+  (testing "Ends at the last punctuation"
     (is (= "In a tree so happy are we."
            (end-at-last-punctuation "In a tree so happy are we. So that")))
     (testing "Replaces ending comma with a period"
     (is (= "In a tree so happy are we."
            (end-at-last-punctuation "In a tree so happy are we, So that"))))
-    (testing "If there are no previous puncations, just leave it alone and add one at the end"
+    (testing "If there are no previous punctuation, just leave it alone and add one at the end"
       (is ( = "In the light of the blue moon."
               (end-at-last-punctuation  "In the light of the blue moon there"))))))
 ```
@@ -649,9 +651,9 @@ We now have a function that will generate tweets for us.  The next step is to ho
    To hook up our bot to twitter, you need to create a twitter account.  Once you do that, need to do the following:
 
 * Go to [https://apps.twitter.com/](https://apps.twitter.com/) to create new twitter application. You will want to set the permission so that it can post to the twitter account. This will give you a _Consumer Key (API Key)_ and a _Consumer Secret (API Secret)_.
-* Go  otthe the _Keys and Access Tokens_ section of the application.  On the bottom half there is a button that says _Create my access token_, click it.  It will generate two more key pieces of information for you: _Access Token_ and _Access Token Secret_.
+* Go  to the the _Keys and Access Tokens_ section of the application.  On the bottom half there is a button that says _Create my access token_, click it.  It will generate two more key pieces of information for you: _Access Token_ and _Access Token Secret_.
 
-Please note that these setting are sensitive and should not be checked into github or shared publically.  To help make our twitter account access, we are going to need the help of two libraries.  The first is [twitter-api](https://github.com/adamwynne/twitter-api) that will help us make our api calls.  The second is [environ](https://github.com/weavejester/environ) that will help us keep our login information safe.
+Please note that these setting are sensitive and should not be checked into github or shared publicly.  To help make our twitter account access, we are going to need the help of two libraries.  The first is [twitter-api](https://github.com/adamwynne/twitter-api) that will help us make our api calls.  The second is [environ](https://github.com/weavejester/environ) that will help us keep our login information safe.
 
 Add both libraries to your _project.clj_
 
@@ -719,11 +721,11 @@ Giving it a try:
 
 ![](http://c4.staticflickr.com/8/7617/16905225975_07da52ac87_b.jpg)
 
-Hurray! We are almost there.  We next need a way to run this status update on a periodic basis, having it post automatically for us.
+Hooray! We are almost there.  We next need a way to run this status update on a periodic basis, having it post automatically for us.
 
 ## Automating our tweets
 
-To have this run from the commnadd line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein run trampoline`.
+To have this run from the command line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein run trampoline`.
 
 So first, modify the _project.clj_ file to have the _at-at_ library, as well as the main function for the namespace.
 
@@ -841,10 +843,10 @@ We have successfully created and deployed a markov bot that will tweet for us.  
 * As soon as we have a good idea where we are headed, switch into a more Test Driven Development cycle with the _lein-test-refresh_ plugin.
 * Create the core of our code to generate and walk our Markov Chain.
 * Create ways to parse input text files to _train_ our bot on.
-* Artistically select some entry points into our chain using prefixs.  Also artistically, fix up the puncuation of the resulting text.
+* Artistically select some entry points into our chain using prefixes.  Also artistically, fix up the puncuation of the resulting text.
 * Set up a Twitter account.
 * Use the _environ_ library to handle our environment specific twitter configuration.
-* Use the _twitter-api_ libray to talk to the twitter account
+* Use the _twitter-api_ library to talk to the twitter account
 * Use the _at-at_ library to schedule a job periodically to tweet for us.
 * Deploy the application to Heroku.
 
