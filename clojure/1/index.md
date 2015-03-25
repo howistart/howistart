@@ -487,7 +487,7 @@ What we are missing is a way to _train_ our bot, by reading in some files of tex
 
 ### Training the bot by reading input files
 
-    To _train_ our bot, we need to be able to give it a text file and have it turn it into a word chain.  Our first text selection will be from [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle).
+To _train_ our bot, we need to be able to give it a text file and have it turn it into a word chain.  Our first text selection will be from [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle).
 
     Making it easier on ourselves, we will do some slight formatting of the text and the save it to a _resources_ directory off of our home project directory, in a file called _quangle-wangle.text_.
 
