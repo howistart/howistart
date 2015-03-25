@@ -412,7 +412,7 @@ Adjusting our _generator.clj_, we first need a helper function that will turn ou
 It takes a chain like `["And" "the" "Pobble" "who"]` and gives us back the display text.
 
 ```clojure
-(chain->text `["And" "the" "Pobble" "who"])
+(chain->text `"And" "the" "Pobble" "who"])
 ;; -> "And the Pobble who"
 ```
 
@@ -477,6 +477,7 @@ Then it will split the start-phrase by spaces, so that it will match up to our p
     result-text))
 ```
 
+
 Taking a moment to recap, this is what we have so far:
 
 * We can take string, parse it and turn it into a word chain.
@@ -489,7 +490,7 @@ What we are missing is a way to _train_ our bot, by reading in some files of tex
 
 To _train_ our bot, we need to be able to give it a text file and have it turn it into a word chain.  Our first text selection will be from [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle).
 
-Making it easier on ourselves, we will do some slight formatting of the text and the save it to a _resources_ directory off of our home project directory, in a file called _quangle-wangle.text_.
+Making it easier on ourselves, we will do some slight formatting of the text.  Save it in a file called _resources/quangle-wangle.txt_.
 
 ```
 On the top of the Crumpetty Tree
@@ -548,14 +549,13 @@ And all were as happy as happy could be,
 With the Quangle Wangle Quee.    
 ```
 
-We can now use `clojure.java.io/resource` to open the file and `slurp` to turn it into a string. From there, we can simply use our `text->word-chain` function to transform it into the word chain that we need.
+We can now use `clojure.java.io/resource` to open the file and `slurp` to turn it into a string. From there, we can simply use our `text->word-chain` function to transform it into the word chain that we need.  Add the `process-file` function to the _generator.clj_ file and give it a try in the REPL.
 
 
 ```clojure
 (defn process-file [fname]
   (text->word-chain
-   (slurp (io/resource fname))))
-
+   (slurp (clojure.java.io/resource fname))))
 
 (generate-text "And the" (process-file "quangle-wangle.txt"))
 ;; -> "And the Attery Squash, and the Bumble-Bee,
