@@ -26,7 +26,13 @@ Leiningen helps you create, manage, and automate your Clojure project.  If you d
 lein new markov-elear
 ```
 
-This will create a basic project skeleton for us to work with.  The default src file that it creates is _src/markov_elear/core.clj_.  This is the first thing to change.  We want a more meaningful file name.  For our purposes, let's rename it to _src/markov_elear/generator.clj_. 
+This will create a basic project skeleton for us to work with. Next, `cd` into the directory.
+
+```
+cd markov-elear
+```
+
+The default src file that it creates is _src/markov_elear/core.clj_.  This is the first thing to change.  We want a more meaningful file name.  For our purposes, let's rename it to _src/markov_elear/generator.clj_. 
 
 ```
 mv src/markov_elear/core.clj src/markov_elear/generator.clj
@@ -35,7 +41,7 @@ mv src/markov_elear/core.clj src/markov_elear/generator.clj
 There is also a skeleton test file that is created in _test/markov_elear/core_test.clj_. We will want to do the same thing to it as well.
 
 ```
-mv test/markov_elear/core_test.clj test/markov_elear/generator_test.js
+mv test/markov_elear/core_test.clj test/markov_elear/generator_test.clj
 ```
 
 Next, open up the _generator.clj_ file in Emacs.  It has been created with the Leiningen template, so there is code already there that looks like:
@@ -52,7 +58,7 @@ Next, open up the _generator.clj_ file in Emacs.  It has been created with the L
 Since, we changed our file to be named _generator.clj_, we also need to change the namespace to match it.  Let's also get rid of the `foo` function.  It should now look like:
 
 ```clojure
-(ns markov-elear.core)
+(ns markov-elear.generator)
 ```
 
 Go ahead and open up the test file as well _test/markov_elear/generator_test.clj_.  It also has some sample code in it from the Leiningen template.  It looks like:
@@ -60,14 +66,14 @@ Go ahead and open up the test file as well _test/markov_elear/generator_test.clj
 ```clojure
 (ns markov-elear.core-test
   (:require [clojure.test :refer :all]
-            [foobar.core :refer :all]))
+            [markov-elear.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
     (is (= 0 1))))
 ```
 
-Change the namespace in the test to match the filename as well.
+Change the namespace in the test to match the filename as well as the require to be that of `markov-elear-generator`.
 
 ```clojure
 (ns markov-elear.generator-test
@@ -82,9 +88,9 @@ Change the namespace in the test to match the filename as well.
 At this point, we should now be able to run `lein test` from the command prompt and see our sample test fail.
 
 ```
-lein test markov-eleaar.generator-test
+lein test markov-elear.generator-test
 
-lein test :only foobar.generator-test/a-test
+lein test :only markov-elear.generator-test/a-test
 
 FAIL in (a-test) (generator_test.clj:7)
 FIXME, I fail.
@@ -139,9 +145,9 @@ This table becomes a guide for us in walking the chain to generate new text.  If
 
 From our table, let's start with the prefix _the Pobble_.
 
-1.  Our starting prefix is "the Pobble".  Our result string will be initialized to it.
-1.  Look up the prefix in the table.  The suffix that goes with it is "who".  Add the suffix to the result string. The new prefix is the last word from the prefix and the suffix.  So the new prefix is "Pobble who".
-1.  Look up up the prefix in the table, the suffix is nil.  This means we have reached the end of the chain.  Our resulting text is "the Pobble who"
+1.  Our starting prefix is _the Pobble_.  Our result string will be initialized to it.
+1.  Look up the prefix in the table.  The suffix that goes with it is _who_.  Add the suffix to the result string. The new prefix is the last word from the prefix and the suffix.  So the new prefix is _Pobble who_.
+1.  Look up up the prefix in the table, the suffix is nil.  This means we have reached the end of the chain.  Our resulting text is _the Pobble who_.
 
 Things get interesting when there is more than one entry for a prefix.  Notice that _And the_ is in the table twice.  This means that there is a choice of what entry to use and what suffix.  We can randomly choose which one to use in our Markov Chain walk.  As a result, our text will be randomly generated. If start with the prefix _And the_ we have different  possibilities for the resulting text.  It could be
 
@@ -186,7 +192,7 @@ word-transitions
 ;;     ("the" "Pobble" "who")
 ;;     ("Pobble" "who")
 ;;     ("who"))
-
+```
 
 This is nice, but we really need to get it into a word-chain format.  Ideally it would a map with the prefixes as the key and then have a set of suffixes to choose from.  So that the prefix of _And the_ would look like
 
@@ -269,7 +275,7 @@ As you save the file, you will notice the test failing in your `lein test-refres
 
 ```clojure
 (defn word-chain [word-transitions]
-  (reduce (fn [r t] (merge-with set/union r
+  (reduce (fn [r t] (merge-with clojure.set/union r
                                (let [[a b c] t]
                                  {[a b] (if c #{c} #{})})))
           {}
@@ -339,7 +345,7 @@ Going back to our _generator.clj_ file, we can start constructing a function to 
       result
       (let [suffix (first (shuffle suffixes))
             new-prefix [(last prefix) suffix]]
-        (recur new-prefix chain (conj result suffix)))))
+        (recur new-prefix chain (conj result suffix))))))
 ```
 
 It takes the prefix and get the suffixes associated with it.  If there are no suffixes, it terminates and returns the result.
@@ -434,6 +440,8 @@ Now we can add the char limit counting to our `walk-chain` function.
 We check the `result-char-count` and the chosen `suffix-char-count` before we recur, so that we can ensure that
 it doesn't go over 140 chars.  If it is going to go over the limit, we return the result and do not `recur`.
 
+_Note:  You may have to restart your `lein test-refresh` since it might be stuck in a loop processing the endless result of the failing test :)_
+
 What we need now is another higher level function that will allow us ,given a prefix and a word chain, return the resulting text.
 
 ### Taking A Start Text Phrase, Walking the Chain, and Returning Text.
@@ -461,10 +469,12 @@ Then it will split the start-phrase by spaces, so that it will match up to our p
 
 
 ```clojure
-(defn text->word-chain [s]
-  (let [words (clojure.string/split s #"[\s|\n]")
-        word-transitions (partition-all 3 1 words)]
-    (word-chain word-transitions)))
+(defn generate-text
+  [start-phrase word-chain]
+  (let [prefix (clojure.string/split start-phrase #" ")
+        result-chain (walk-chain prefix word-chain prefix)
+        result-text (chain->text result-chain)]
+    result-text))
 ```
 
 Taking a moment to recap, this is what we have so far:
