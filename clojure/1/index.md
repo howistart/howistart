@@ -139,7 +139,7 @@ This table becomes a guide for us in walking the chain to generate new text.  If
 
 
 1. Choose a prefix to start.  Your result string starts as this prefix.
-1. Take the suffix that goes with the prefix.  Add the suffix to your result string. Also, Add the last word of the prefix to the suffix, this is your new prefix.
+1. Take the suffix that goes with the prefix.  Add the suffix to your result string. Also, add the last word of the prefix to the suffix, this is your new prefix.
 1. Look up your new prefix in the table and continue until there is no suffix.
 1. The result string is your generated text.
 
