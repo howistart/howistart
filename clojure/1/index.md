@@ -797,7 +797,7 @@ The first thing you will need to do is to create an account on Heroku.  It is fr
 
 Next, you will need the _Heroku Toolbelt_.  This gives you a nice command line tool to configure and deploy applications.  You can download it from [https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up](https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up).
 
-Once you have downloaded the tool, you will need to configure it with your username and password.  You can do this at the command line by typing _heroku login_. You will be prompted for your email and password.
+Once you have downloaded the tool, you will need to configure it with your username and password.  You can do this at the command line by typing `heroku login`. You will be prompted for your email and password.
 
 ```
 -> heroku login
