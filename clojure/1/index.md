@@ -579,7 +579,7 @@ After we have chosen our text selections, we define a list of input files and th
 (def functional-leary (apply merge-with clojure.set/union (map process-file files)))
 ```
 
-Giving it a try now.
+Giving it a try in the REPL.
 
 ```clojure
 (generate-text "On the" functional-leary)
@@ -671,7 +671,7 @@ Add both libraries to your _project.clj_
 
 ```clojure
  [twitter-api "0.7.8"]
- [environ "1.0.0"]]
+ [environ "1.0.0"]
 ```
 
 Also add the `lein-environ` plugin to your _project.clj_ as well.
@@ -680,7 +680,9 @@ Also add the `lein-environ` plugin to your _project.clj_ as well.
 :plugins [[lein-environ "1.0.0"]]
 ```
 
-The environ plugin allows us to pass configuration information from environment settings or a _profiles.clj_ file that can be ignored and not checked in.  Let's go ahead and add a _profiles.clj_ file to the root of our project and put in all our twitter account info.
+The environ plugin allows us to pass configuration information from environment settings or a _profiles.clj_ file that can be ignored and **not checked** in.  Let's go ahead and add a _profiles.clj_ file to the root of our project and put in all our twitter account info.
+
+_Danger: Do not check in your twitter keys and push to a public repo!_
 
 ```clojure
 {:dev  {:env {:app-consumer-key "foo"
@@ -752,9 +754,16 @@ So first, modify the _project.clj_ file to have the _at-at_ library, as well as 
   :profiles {:dev {:plugins [[com.jakemccrary/lein-test-refresh "0.7.0"]]}})
 ```
 
-Then, going back to the _generator.clj_ file, define a pool for the scheduling process, and add in a `-main` function to tweet for us every 8 hours.
+Then, going back to the _generator.clj_ file, first add the _overtone/at-at_ library to the namespace.  Then, define a pool for the scheduling process, and add in a `-main` function to tweet for us every 8 hours.  =
 
 ```clojure
+(ns markov-elear.generator
+  (:require [overtone.at-at :as overtone]
+            [twitter.api.restful :as twitter]
+            [twitter.oauth :as twitter-oauth]
+            [environ.core :refer [env]]))
+
+
 (def my-pool (overtone/mk-pool))
 
 (defn -main [& args]
@@ -786,7 +795,7 @@ At this point our program is complete.  We could happily leave it running locall
 
 The first thing you will need to do is to create an account on Heroku.  It is free of charge.  You can create your login at https://signup.heroku.com/dc[https://signup.heroku.com/dc].
 
-Next, you will need the _Heroku Toolbelt_.  This gives you a nice command line tool to configure and deploy applications.  You can download it from https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up[https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up].
+Next, you will need the _Heroku Toolbelt_.  This gives you a nice command line tool to configure and deploy applications.  You can download it from [https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up](https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up).
 
 Once you have downloaded the tool, you will need to configure it with your username and password.  You can do this at the command line by typing *+heroku login+*. You will be prompted for your email and password.
 
@@ -814,7 +823,7 @@ worker: lein run trampoline
 This will tell Heroku to run our program as a background worker, (rather than a web app), and start it up with `lein run trampoline`.
 
 The next step is to create an app on Heroku for it.  This will get Heroku ready to receive your code for deployment.
-Type *+heroku create+* into your command prompt at the root of the _cheshire-cat_ project.  You will see.
+Type `heroku create` into your command prompt at the root of the project.  You will see.
 
 
 ```
@@ -846,12 +855,14 @@ git push heroku master
 
 You should see it deploy and tweet for you!
 
+If you need to check the logs, you can do it with `heroku logs`.
+
 
 We have successfully created and deployed a markov bot that will tweet for us.  Let's recap what we have done so far.
 
 ## Summary
 
-* Use Emacs REPL integration to play and experiment with the code.  This is what I call an early sculpting with code phase,  or REPL Driven Development.
+* Use Emacs REPL integration to play and experiment with the code.  This is what I call an early sculpting with code phase,  or _REPL Driven Development_.
 * As soon as we have a good idea where we are headed, switch into a more Test Driven Development cycle with the _lein-test-refresh_ plugin.
 * Create the core of our code to generate and walk our Markov Chain.
 * Create ways to parse input text files to _train_ our bot on.
@@ -863,7 +874,7 @@ We have successfully created and deployed a markov bot that will tweet for us.  
 * Deploy the application to Heroku.
 
 
-I hope you have enjoyed our Clojure bot creating journey. The full code for this project can be found at [https://github.com/gigasquid/markov-elear](https://github.com/gigasquid/markov-elear).
+I hope you have enjoyed our Clojure bot creating journey. The full code for this project can be found at [https://github.com/gigasquid/markov-elear](https://github.com/gigasquid/markov-elear).  The twitter bot also lives here [@functionalELear](https://twitter.com/FunctionalELear)
 
 I encourage you to experiment and create your own _art bots_ and,  of course, to continue to explore and enjoy the wonderful world of Clojure.
 
