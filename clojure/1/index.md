@@ -202,7 +202,7 @@ This is nice, but we really need to get it into a word-chain format.  Ideally it
 
 A map with the key being the vector of prefix words and the value being the set of suffixes.
 
-We are clearly going to need to map through the list of word-transitions and build this up somehow.  Perhaps `merge-with` will help us out.
+We need to map through the list of word-transitions and build this up somehow.  Perhaps `merge-with` will help us out.
 
 ```clojure
 (merge-with concat {:a [1]} {:a [3]})
