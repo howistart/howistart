@@ -14,7 +14,7 @@ Emacs is more than an editor, it is a lifestyle.  I also admit that the learning
 
 Nevertheless, once I started using Emacs for Clojure and experienced the interactive nature of the code and the REPL, (Read Eval Print Loop), I was hooked.  I use a customized version of [Emacs Starter Kit](https://github.com/technomancy/emacs-starter-kit). I also find the [Solarized Color-scheme](https://github.com/sellout/emacs-color-theme-solarized) a must for my eyes. For Clojure code, I use [Cider for Emacs](https://github.com/clojure-emacs/cider), which gives me the incredible interactive code experience that I was mentioning.
 
-Now that we have our tea and emacs editor open, It is time to actually get our Clojure project created.  For this I use [Leiningen](http://leiningen.org/).
+Now that we have our tea and Emacs editor open, It is time to actually get our Clojure project created.  For this I use [Leiningen](http://leiningen.org/).
 
 ## Getting the basic project setup
 
