@@ -793,7 +793,7 @@ At this point our program is complete.  We could happily leave it running locall
 
 ## Deploying to Heroku
 
-The first thing you will need to do is to create an account on Heroku.  It is free of charge.  You can create your login at https://signup.heroku.com/dc[https://signup.heroku.com/dc].
+The first thing you will need to do is to create an account on Heroku.  It is free of charge.  You can create your login at [https://signup.heroku.com/dc](https://signup.heroku.com/dc).
 
 Next, you will need the _Heroku Toolbelt_.  This gives you a nice command line tool to configure and deploy applications.  You can download it from [https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up](https://devcenter.heroku.com/articles/getting-started-with-clojure#set-up).
 
