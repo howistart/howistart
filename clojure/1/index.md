@@ -55,7 +55,7 @@ Next, open up the _generator.clj_ file in Emacs.  It has been created with the L
   (println x "Hello, World!"))
 ````
 
-Since, we changed our file to be named _generator.clj_, we also need to change the namespace to match it.  Let's also get rid of the `foo` function.  It should now look like:
+Since we changed our file to be named _generator.clj_, we also need to change the namespace to match it.  Let's also get rid of the `foo` function.  It should now look like:
 
 ```clojure
 (ns markov-elear.generator)
