@@ -739,7 +739,7 @@ Hooray! We are almost there.  We next need a way to run this status update on a 
 
 ## Automating our tweets
 
-To have this run from the command line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein run trampoline`.
+To have this run from the command line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein trampoline run`.
 
 So first, modify the _project.clj_ file to have the _at-at_ library, as well as the main function for the namespace.
 
@@ -776,7 +776,7 @@ Then, going back to the _generator.clj_ file, first add the _overtone/at-at_ lib
 Now we should be able to try this from the command line.
 
 ```
-lein run trampoline
+lein trampoline run
 ```
 
 and see something like the following
@@ -817,10 +817,10 @@ git init
 After that, we need to tell Heroku how to start up our app.  We do this with a _Procfile_ in the main project directory. Go ahead and add the file with the following contents.
 
 ```
-worker: lein run trampoline
+worker: lein trampoline run
 ```
 
-This will tell Heroku to run our program as a background worker, (rather than a web app), and start it up with `lein run trampoline`.
+This will tell Heroku to run our program as a background worker, (rather than a web app), and start it up with `lein trampoline run`.
 
 The next step is to create an app on Heroku for it.  This will get Heroku ready to receive your code for deployment.
 Type `heroku create` into your command prompt at the root of the project.  You will see.
