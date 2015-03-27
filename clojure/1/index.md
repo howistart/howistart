@@ -617,13 +617,13 @@ Adding a test for that in our _generator_test.clj_ file:
 (deftest test-end-at-last-puntcuation
   (testing "Ends at the last punctuation"
     (is (= "In a tree so happy are we."
-           (end-at-last-punctuation "In a tree so happy are we. So that")))
-    (testing "Replaces ending comma with a period"
+           (end-at-last-punctuation "In a tree so happy are we. So that"))))
+  (testing "Replaces ending comma with a period"
     (is (= "In a tree so happy are we."
            (end-at-last-punctuation "In a tree so happy are we, So that"))))
-    (testing "If there are no previous punctuation, just leave it alone and add one at the end"
-      (is ( = "In the light of the blue moon."
-              (end-at-last-punctuation  "In the light of the blue moon there"))))))
+  (testing "If there are no previous punctuation, just leave it alone and add one at the end"
+    (is ( = "In the light of the blue moon."
+            (end-at-last-punctuation  "In the light of the blue moon there")))))
 ```
 
 We can make this test pass in our _generator.clj_ file, by using some string and regex functions.
