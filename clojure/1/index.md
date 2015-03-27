@@ -442,7 +442,7 @@ it doesn't go over 140 chars.  If it is going to go over the limit, we return th
 
 _Note:  You may have to restart your `lein test-refresh` since it might be stuck in a loop processing the endless result of the failing test :)_
 
-What we need now is another higher level function that will allow us ,given a prefix and a word chain, return the resulting text.
+What we need now is another higher level function that will allow us, given a prefix and a word chain, return the resulting text.
 
 ### Taking A Start Text Phrase, Walking the Chain, and Returning Text.
 
