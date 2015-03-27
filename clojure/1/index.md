@@ -614,7 +614,7 @@ Also, I want to fix a bit of the punctuation of the generated text.  In particul
 Adding a test for that in our _generator_test.clj_ file:
 
 ```clojure
-(deftest test-end-at-last-puntcuation
+(deftest test-end-at-last-punctuation
   (testing "Ends at the last punctuation"
     (is (= "In a tree so happy are we."
            (end-at-last-punctuation "In a tree so happy are we. So that"))))
