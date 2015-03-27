@@ -430,7 +430,7 @@ Now we can add the char limit counting to our `walk-chain` function.
             new-prefix [(last prefix) suffix]
             result-with-spaces (chain->text result)
             result-char-count (count result-with-spaces)
-            suffix-char-count (+ 1 (count suffix))
+            suffix-char-count (inc (count suffix))
             new-result-char-count (+ result-char-count suffix-char-count)]
         (if (>= new-result-char-count 140)
           result
