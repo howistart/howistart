@@ -349,7 +349,7 @@ Going back to our _generator.clj_ file, we can start constructing a function to 
 ```
 
 It takes the prefix and get the suffixes associated with it.  If there are no suffixes, it terminates and returns the result.
-Otherwise, it uses `rand-int` to pick a suffix.  Then it constructs the new prefix from the last part of the current prefix and the suffix. Finally, it recurs into the function using the `new-prefix` and adding the suffix to the result.
+Otherwise, it uses `shuffle` to pick a random suffix.  Then it constructs the new prefix from the last part of the current prefix and the suffix. Finally, it recurs into the function using the `new-prefix` and adding the suffix to the result.
 
 We have another passing test, but we still need to consider the other walking of the chain where it has a choice.  Go ahead and add a test for that now too.
 
