@@ -16,9 +16,8 @@ Along with [installing Erlang](https://www.erlang-solutions.com/downloads)
 For rebar, just [download it and follow the
 instructions](http://www.rebar3.org/v3.0/docs/getting-started). Rebar3 will
 basically generate a self-executable that you can store in your repository, or
-install globally on your computer. This tutorial expects that you're using a
-recent version (>= alpha-2), and that you have installed it in your system and
-made it available in your `$PATH`.
+install globally on your computer. This tutorial expects that you have
+installed it in your system and made it available in your `$PATH`.
 
 Once they're all installed somewhere in your system, arm yourself with the text
 editor or IDE of your choice (mine is Vim, because I'm a terrible person) and
@@ -615,10 +614,18 @@ The rebar.config file looks like this:
      %% list of apps to include
      [muumuu]},
 
-    %% comment this line for a release that ships its own Erlang VM
-    {include_erts, false},
-    %% uncomment this line to ship a release without the source code included
-    % {include_src, false}
+    %% Don't ship an Erlang VM by default
+    {include_erts, false}
+]}.
+
+{profiles, [
+    %% called as `rebar3 as prod <command>`
+    {prod, [
+        {relx, [ % override relx specifically
+          {include_src, false}, % don't include source code
+          {include_erts, true}  % include the VM in the release
+        ]}
+    ]}
 ]}.
 ```
 
@@ -690,12 +697,20 @@ The rebar3 config file needs an update too:
      %% list of apps to include
      [muumuu]},
 
-    %% comment this line for a release that ships its own Erlang VM
+    %% Don't ship an Erlang VM by default
     {include_erts, false},
-    %% uncomment this line to ship a release without the source code included
-    % {include_src, false},
 
     {vm_args, "./config/vm.args"}
+]}.
+
+{profiles, [
+    %% called as `rebar3 as prod <command>`
+    {prod, [
+        {relx, [ % override relx specifically
+          {include_src, false}, % don't include source code
+          {include_erts, true}  % include the VM in the release
+        ]}
+    ]}
 ]}.
 ```
 
@@ -766,9 +781,14 @@ Adding `meck` can be done by declaring `rebar.config` dependencies:
 
 ```erlang
 {profiles, [
-  {test, [
-    {deps, [
-        {meck, {git, "https://github.com/eproxus/meck.git", {tag, "0.8.1"}}}
+    {test, [
+        {deps, [
+          {meck, {git, "https://github.com/eproxus/meck.git", {tag, "0.8.1"}}}
+        ]}
+    ]},
+    %% called as `rebar3 as prod <command>`
+    {prod, [
+        ...
     ]}
   ]}
 ]}.
