@@ -291,14 +291,14 @@ What about generating the word chain from an string of text?  When we were exper
 (deftest test-text->word-chain
   (testing "string with spaces and newlines"
     (let [example "And the Golden Grouse\nAnd the Pobble who"]
-     (is ( = {["who" nil] #{}
-              ["Pobble" "who"] #{}
-              ["the" "Pobble"] #{"who"}
-              ["Grouse" "And"] #{"the"}
-              ["Golden" "Grouse"] #{"And"}
-              ["the" "Golden"] #{"Grouse"}
-              ["And" "the"] #{"Pobble" "Golden"}}
-             (text->word-chain example))))))
+     (is (= {["who" nil] #{}
+             ["Pobble" "who"] #{}
+             ["the" "Pobble"] #{"who"}
+             ["Grouse" "And"] #{"the"}
+             ["Golden" "Grouse"] #{"And"}
+             ["the" "Golden"] #{"Grouse"}
+             ["And" "the"] #{"Pobble" "Golden"}}
+            (text->word-chain example))))))
 ```
 
 To make it pass, add the `text->word-chain` function in the _generator_test.clj_. 
