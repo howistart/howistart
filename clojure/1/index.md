@@ -1,8 +1,8 @@
 We are going to explore Clojure by creating a fun project together.  In particular, we will create a twitter bot that create its text based on a mashup of [Edward Lear's poetry] ((http://www.gutenberg.org/files/13650/13650-h/13650-h.htm) ), and a goodly selection of functional programming text taken from Wikipedia.
 
-Why Edward Lear and Functional Programming?  First, because I really enjoy his poetry. I fondly remember reading his poetry to my children.   Some of my favorite poems are [The Pobble Who Has No Toes](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#pobble), [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle), and [The Jumblies](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#jumblies).  The whimsical nature of his poetry, like his contemporary Lewis Carroll, have great appeal to me.  It is only natural that I should want to combine it with my other love, functional programming.  In fact, I feel that some of of terms in functional programming like _monad_ and _functor_,  could fit right in with Edward Lear's _Nonsense Songs_.  This humble bot, will aim to unite the spheres of functional programming and nonsense poetry.
+Why Edward Lear and Functional Programming?  First, because I really enjoy his poetry. I fondly remember reading his poetry to my children.   Some of my favorite poems are [The Pobble Who Has No Toes](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#pobble), [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle), and [The Jumblies](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#jumblies).  The whimsical nature of his poetry, like his contemporary Lewis Carroll, have great appeal to me.  It is only natural that I should want to combine it with my other love, functional programming.  In fact, I feel that some of of terms in functional programming like _monad_ and _functor_,  could fit right in with Edward Lear's _Nonsense Songs_.  This humble bot aims to unite the spheres of functional programming and nonsense poetry.
 
-This tutorial will start with getting started with a basic Clojure project and editor.  Then,  build up our tweet generator with a [Markov Chain](http://en.wikipedia.org/wiki/Markov_chain).  Finally, we will deploy our code to [Heroku](https://www.heroku.com/) and hook it up to a twitter account, where it will live and tweet all on its own.
+This tutorial will start with getting started with a basic Clojure project and editor.  Then, we'll build up our tweet generator with a [Markov Chain](http://en.wikipedia.org/wiki/Markov_chain).  Finally, we will deploy our code to [Heroku](https://www.heroku.com/) and hook it up to a twitter account, where it will live and tweet all on its own.
 
 Since this walk through is geared to explain how I work in particular, we will start my essential ingredient to any coding project ... _tea_.  I brew myself a cup of _PG Tips_ tea with a splash of milk, then I sit down and fire up my trusty editor _Emacs_.
 
@@ -14,7 +14,7 @@ Emacs is more than an editor, it is a lifestyle.  I also admit that the learning
 
 Nevertheless, once I started using Emacs for Clojure and experienced the interactive nature of the code and the REPL, (Read Eval Print Loop), I was hooked.  I use a customized version of [Emacs Starter Kit](https://github.com/technomancy/emacs-starter-kit). I also find the [Solarized Color-scheme](https://github.com/sellout/emacs-color-theme-solarized) a must for my eyes. For Clojure code, I use [Cider for Emacs](https://github.com/clojure-emacs/cider), which gives me the incredible interactive code experience that I was mentioning.
 
-Now that we have our tea and emacs editor open, It is time to actually get our Clojure project created.  For this I use [Leiningen](http://leiningen.org/).
+Now that we have our tea and Emacs editor open, It is time to actually get our Clojure project created.  For this I use [Leiningen](http://leiningen.org/).
 
 ## Getting the basic project setup
 
@@ -55,7 +55,7 @@ Next, open up the _generator.clj_ file in Emacs.  It has been created with the L
   (println x "Hello, World!"))
 ````
 
-Since, we changed our file to be named _generator.clj_, we also need to change the namespace to match it.  Let's also get rid of the `foo` function.  It should now look like:
+Since we changed our file to be named _generator.clj_, we also need to change the namespace to match it.  Let's also get rid of the `foo` function.  It should now look like:
 
 ```clojure
 (ns markov-elear.generator)
@@ -139,7 +139,7 @@ This table becomes a guide for us in walking the chain to generate new text.  If
 
 
 1. Choose a prefix to start.  Your result string starts as this prefix.
-1. Take the suffix that goes with the prefix.  Add the suffix to your result string. Also, Add the last word of the prefix to the suffix, this is your new prefix.
+1. Take the suffix that goes with the prefix.  Add the suffix to your result string. Also, add the last word of the prefix to the suffix, this is your new prefix.
 1. Look up your new prefix in the table and continue until there is no suffix.
 1. The result string is your generated text.
 
@@ -202,7 +202,7 @@ This is nice, but we really need to get it into a word-chain format.  Ideally it
 
 A map with the key being the vector of prefix words and the value being the set of suffixes.
 
-We are clearly going to need to map through the list of word-transitions and build this up somehow.  Perhaps `merge-with` will help us out.
+We need to map through the list of word-transitions and build this up somehow.  Perhaps `merge-with` will help us out.
 
 ```clojure
 (merge-with concat {:a [1]} {:a [3]})
@@ -430,7 +430,7 @@ Now we can add the char limit counting to our `walk-chain` function.
             new-prefix [(last prefix) suffix]
             result-with-spaces (chain->text result)
             result-char-count (count result-with-spaces)
-            suffix-char-count (+ 1 (count suffix))
+            suffix-char-count (inc (count suffix))
             new-result-char-count (+ result-char-count suffix-char-count)]
         (if (>= new-result-char-count 140)
           result
@@ -442,7 +442,7 @@ it doesn't go over 140 chars.  If it is going to go over the limit, we return th
 
 _Note:  You may have to restart your `lein test-refresh` since it might be stuck in a loop processing the endless result of the failing test :)_
 
-What we need now is another higher level function that will allow us ,given a prefix and a word chain, return the resulting text.
+What we need now is another higher level function that, when given a prefix and a word chain, will return the resulting text.
 
 ### Taking A Start Text Phrase, Walking the Chain, and Returning Text.
 
@@ -614,16 +614,16 @@ Also, I want to fix a bit of the punctuation of the generated text.  In particul
 Adding a test for that in our _generator_test.clj_ file:
 
 ```clojure
-(deftest test-end-at-last-puntcuation
+(deftest test-end-at-last-punctuation
   (testing "Ends at the last punctuation"
     (is (= "In a tree so happy are we."
-           (end-at-last-punctuation "In a tree so happy are we. So that")))
-    (testing "Replaces ending comma with a period"
+           (end-at-last-punctuation "In a tree so happy are we. So that"))))
+  (testing "Replaces ending comma with a period"
     (is (= "In a tree so happy are we."
            (end-at-last-punctuation "In a tree so happy are we, So that"))))
-    (testing "If there are no previous punctuation, just leave it alone and add one at the end"
-      (is ( = "In the light of the blue moon."
-              (end-at-last-punctuation  "In the light of the blue moon there"))))))
+  (testing "If there are no previous punctuation, just leave it alone and add one at the end"
+    (is ( = "In the light of the blue moon."
+            (end-at-last-punctuation  "In the light of the blue moon there")))))
 ```
 
 We can make this test pass in our _generator.clj_ file, by using some string and regex functions.
@@ -739,7 +739,7 @@ Hooray! We are almost there.  We next need a way to run this status update on a 
 
 ## Automating our tweets
 
-To have this run from the command line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein run trampoline`.
+To have this run from the command line in an automated fashion, we are going to do two things.  The first is to use the [Overtone at-at library](https://github.com/overtone/at-at) for scheduling.  And the other thing that we need to do is to add a main function to the _generator.clj_ file and to setup up the project so that it can run with `lein trampoline run`.
 
 So first, modify the _project.clj_ file to have the _at-at_ library, as well as the main function for the namespace.
 
@@ -776,7 +776,7 @@ Then, going back to the _generator.clj_ file, first add the _overtone/at-at_ lib
 Now we should be able to try this from the command line.
 
 ```
-lein run trampoline
+lein trampoline run
 ```
 
 and see something like the following
@@ -817,10 +817,10 @@ git init
 After that, we need to tell Heroku how to start up our app.  We do this with a _Procfile_ in the main project directory. Go ahead and add the file with the following contents.
 
 ```
-worker: lein run trampoline
+worker: lein trampoline run
 ```
 
-This will tell Heroku to run our program as a background worker, (rather than a web app), and start it up with `lein run trampoline`.
+This will tell Heroku to run our program as a background worker, (rather than a web app), and start it up with `lein trampoline run`.
 
 The next step is to create an app on Heroku for it.  This will get Heroku ready to receive your code for deployment.
 Type `heroku create` into your command prompt at the root of the project.  You will see.
