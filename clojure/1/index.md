@@ -890,4 +890,4 @@ I hope you have enjoyed our Clojure bot creating journey. The full code for this
 
 I encourage you to experiment and create your own _art bots_ and,  of course, to continue to explore and enjoy the wonderful world of Clojure.
 
-_ Special thanks to [Jake McCrary](https://twitter.com/jakemcc) and [Paul Henrich](https://twitter.com/jakemcc) for reviewing this post and providing wonderful feedback._
+_Special thanks to [Jake McCrary](https://twitter.com/jakemcc) and [Paul Henrich](https://twitter.com/jakemcc) for reviewing this post and providing wonderful feedback._
