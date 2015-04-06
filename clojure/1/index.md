@@ -12,7 +12,7 @@ Emacs is more than an editor, it is a lifestyle.  I also admit that the learning
 
 ![](http://c4.staticflickr.com/8/7598/16914999852_995b77a811_z.jpg)
 
-Nevertheless, once I started using Emacs for Clojure and experienced the interactive nature of the code and the REPL, (Read Eval Print Loop), I was hooked.  I use a customized version of [Emacs Starter Kit](https://github.com/technomancy/emacs-starter-kit). I also find the [Solarized Color-scheme](https://github.com/sellout/emacs-color-theme-solarized) a must for my eyes. For Clojure code, I use [Cider for Emacs](https://github.com/clojure-emacs/cider), which gives me the incredible interactive code experience that I was mentioning.
+Nevertheless, once I started using Emacs for Clojure and experienced the interactive nature of the code and the REPL, (Read Eval Print Loop), I was hooked.  I use a customized version of [Emacs Starter Kit](https://github.com/technomancy/emacs-starter-kit). I also find the [Solarized Color-scheme](https://github.com/sellout/emacs-color-theme-solarized) a must for my eyes. For Clojure code, I use [Cider for Emacs](https://github.com/clojure-emacs/cider), which gives me the incredible interactive code experience that I was mentioning.  If you are looking to try out Emacs I would recommend getting the starter kit and grabbing a good tutorial like this [one](http://www.jesshamrick.com/2012/09/10/absolute-beginners-guide-to-emacs/).
 
 Now that we have our tea and Emacs editor open, It is time to actually get our Clojure project created.  For this I use [Leiningen](http://leiningen.org/).
 
@@ -109,13 +109,21 @@ Fantastic.  Our project is all set up.  We are ready to _jack-in_ with Emacs and
 ## Cider Jack In and Experiment
 Here is where we start to use the interactive nature of Clojure and Emacs in earnest.  With the _generator.clj_ file open in Emacs, type `M-x cider-jack-in`.
 This will start a nREPL server for our project, so we can actively start to experiment with our code.  This early stage is a bit like playing with putty before sculpting.  It allows
-us to quickly try out different approaches and get a feel for data constructs to use.  For example, type into `generator.clj` the line:
+us to quickly try out different approaches and get a feel for data constructs to use.  For example, first put your cursor after the namespace form and hit `C-x C-e` to evaluate the form.
+
+```clojure
+(ns markov-elear.generator)
+```
+
+You are now all set to the generator namespace for your evaluation.
+
+Next, type into `generator.clj` the line:
 
 ```clojure
 (+ 1 1)
 ```
 
-At this point, you can put your cursor at the end of the form and hit `C-x C-e` you will see the result `2` appear in the mini-buffer at the bottom of the screen.
+At this point, you can put your cursor at the end of the form and again hit `C-x C-e` you will see the result `2` appear in the mini-buffer at the bottom of the screen.
 
 Now, we are ready to experiment with Markov Chains.  The first thing we need is some small example to play with.  Consider the following text.
 
@@ -402,6 +410,8 @@ Because we have randomness to deal with, we can use `with-redefs` to redefine `s
                  (take 8 (walk-chain prefix chain prefix)))))))))
 ```
 
+_Note:  You will have to restart your `lein test-refresh` after you implement the solution, since it will be stuck in a loop processing the endless result of the failing test :)_
+
 Adjusting our _generator.clj_, we first need a helper function that will turn our result chain into a string with spaces, so that we can count the chars and make sure that they are under the limit.  We will call it `chain->text`.
 
 ```clojure
@@ -440,7 +450,6 @@ Now we can add the char limit counting to our `walk-chain` function.
 We check the `result-char-count` and the chosen `suffix-char-count` before we recur, so that we can ensure that
 it doesn't go over 140 chars.  If it is going to go over the limit, we return the result and do not `recur`.
 
-_Note:  You may have to restart your `lein test-refresh` since it might be stuck in a loop processing the endless result of the failing test :)_
 
 What we need now is another higher level function that, when given a prefix and a word chain, will return the resulting text.
 
@@ -614,16 +623,19 @@ Also, I want to fix a bit of the punctuation of the generated text.  In particul
 Adding a test for that in our _generator_test.clj_ file:
 
 ```clojure
-(deftest test-end-at-last-punctuation
-  (testing "Ends at the last punctuation"
+(deftest test-end-at-last-puntcuation
+  (testing "Ends at the last puncuation"
     (is (= "In a tree so happy are we."
-           (end-at-last-punctuation "In a tree so happy are we. So that"))))
-  (testing "Replaces ending comma with a period"
+           (end-at-last-punctuation "In a tree so happy are we. So that")))
+    (testing "Replaces ending comma with a period"
     (is (= "In a tree so happy are we."
            (end-at-last-punctuation "In a tree so happy are we, So that"))))
-  (testing "If there are no previous punctuation, just leave it alone and add one at the end"
-    (is ( = "In the light of the blue moon."
-            (end-at-last-punctuation  "In the light of the blue moon there")))))
+    (testing "If there are no previous puncations, just leave it alone and add one at the end"
+      (is ( = "In the light of the blue moon."
+              (end-at-last-punctuation  "In the light of the blue moon there"))))
+    (testing "works with multiple punctuation"
+      (is ( = "In the light of the blue moon.  We danced merrily."
+              (end-at-last-punctuation  "In the light of the blue moon.  We danced merrily.  Be"))))))
 ```
 
 We can make this test pass in our _generator.clj_ file, by using some string and regex functions.
@@ -878,3 +890,4 @@ I hope you have enjoyed our Clojure bot creating journey. The full code for this
 
 I encourage you to experiment and create your own _art bots_ and,  of course, to continue to explore and enjoy the wonderful world of Clojure.
 
+_ Special thanks to [Jake McCrary](https://twitter.com/jakemcc) and [Paul Henrich](https://twitter.com/jakemcc) for reviewing this post and providing wonderful feedback._
