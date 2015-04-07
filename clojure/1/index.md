@@ -1,4 +1,4 @@
-We are going to explore Clojure by creating a fun project together.  In particular, we will create a twitter bot that create its text based on a mashup of [Edward Lear's poetry](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm), and a goodly selection of functional programming text taken from Wikipedia.
+We are going to explore Clojure by creating a fun project together.  In particular, we will create a twitter bot that creates its text based on a mashup of [Edward Lear's poetry](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm), and a goodly selection of functional programming text taken from Wikipedia.
 
 Why Edward Lear and Functional Programming?  First, because I really enjoy his poetry. I fondly remember reading his poetry to my children.   Some of my favorite poems are [The Pobble Who Has No Toes](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#pobble), [The Quangle Wangle's Hat](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#quangle), and [The Jumblies](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm#jumblies).  The whimsical nature of his poetry, like his contemporary Lewis Carroll, have great appeal to me.  It is only natural that I should want to combine it with my other love, functional programming.  In fact, I feel that some of of terms in functional programming like _monad_ and _functor_,  could fit right in with Edward Lear's _Nonsense Songs_.  This humble bot aims to unite the spheres of functional programming and nonsense poetry.
 
@@ -133,14 +133,16 @@ Now, we are ready to experiment with Markov Chains.  The first thing we need is 
 
 To construct a Markov Chain, we need to transform this text into a chain of prefixes and suffixes.  In Markov chains, the length of the prefix can vary.  The larger the prefix, the more predictable the text becomes, while the smaller the prefix size, the more random.  In this case, we are going to use a prefix size of 2.  We want to break up the original text into chunks of two words.  The suffix is the next word that comes after.
 
-| Prefix        | Suffix
-| ------------- |:-------------
+````
+|Prefix        | Suffix
+| -------------|-------------
 | And the      | Golden
 | the Golden   | Grouse
 | Grouse And   | the
 | And the      | Pobble
 | the Pobble   | who
 | Pobble who   | nil
+````
 
 
 This table becomes a guide for us in walking the chain to generate new text.  If we start at a random place in the table, we can generate some text by following some simple rules.
@@ -576,7 +578,7 @@ We can now use `clojure.java.io/resource` to open the file and `slurp` to turn i
 Great!  We just need to add some more text files.  We will add some more Edward Lear Poems, As well as some text from wikipedia on Functional Programming.
 
 * [The Project Gutenberg eBook, Nonsense Books, by Edward Lear](http://www.gutenberg.org/files/13650/13650-h/13650-h.htm)
-* [http://en.wikipedia.org/wiki/Monad_(functional_programming)](http://en.wikipedia.org/wiki/Monad_(functional_programming)
+* http://en.wikipedia.org/wiki/Monad_(functional_programming)
 * [http://en.wikipedia.org/wiki/Functional_programming](http://en.wikipedia.org/wiki/Functional_programming)
 * [http://en.wikipedia.org/wiki/Clojure](http://en.wikipedia.org/wiki/Clojure)
 
@@ -766,7 +768,7 @@ So first, modify the _project.clj_ file to have the _at-at_ library, as well as 
   :profiles {:dev {:plugins [[com.jakemccrary/lein-test-refresh "0.7.0"]]}})
 ```
 
-Then, going back to the _generator.clj_ file, first add the _overtone/at-at_ library to the namespace.  Then, define a pool for the scheduling process, and add in a `-main` function to tweet for us every 8 hours.  =
+Then, going back to the _generator.clj_ file, first add the _overtone/at-at_ library to the namespace.  Then, define a pool for the scheduling process, and add in a `-main` function to tweet for us every 8 hours.
 
 ```clojure
 (ns markov-elear.generator
