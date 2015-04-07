@@ -410,7 +410,7 @@ Because we have randomness to deal with, we can use `with-redefs` to redefine `s
                  (take 8 (walk-chain prefix chain prefix)))))))))
 ```
 
-_Note:  The test will actually run forever since it is stuck in an endless loop.  You will have to restart your _test-refresh_ session after you implement the solution._
+_Note:  The test will actually run forever since it is stuck in an endless loop.  You will have to restart your test-refresh session after you implement the solution._
 
 Adjusting our _generator.clj_, we first need a helper function that will turn our result chain into a string with spaces, so that we can count the chars and make sure that they are under the limit.  We will call it `chain->text`.
 
