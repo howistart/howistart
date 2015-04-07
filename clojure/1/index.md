@@ -886,7 +886,7 @@ We have successfully created and deployed a markov bot that will tweet for us.  
 * Deploy the application to Heroku.
 
 
-I hope you have enjoyed our Clojure bot creating journey. The full code for this project can be found at [https://github.com/gigasquid/markov-elear](https://github.com/gigasquid/markov-elear).  The twitter bot also lives here [@functionalELear](https://twitter.com/FunctionalELear)
+I hope you have enjoyed our Clojure bot creating journey. The full code for this project can be found at [https://github.com/gigasquid/markov-elear](https://github.com/gigasquid/markov-elear).  The twitter bot lives at [functionalELear](https://twitter.com/FunctionalELear)
 
 I encourage you to experiment and create your own _art bots_ and,  of course, to continue to explore and enjoy the wonderful world of Clojure.
 
