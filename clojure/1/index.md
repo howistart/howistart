@@ -422,7 +422,7 @@ Adjusting our _generator.clj_, we first need a helper function that will turn ou
 It takes a chain like `["And" "the" "Pobble" "who"]` and gives us back the display text.
 
 ```clojure
-(chain->text "And" "the" "Pobble" "who"])
+(chain->text ["And" "the" "Pobble" "who"])
 ;; -> "And the Pobble who"
 ```
 
