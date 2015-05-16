@@ -507,6 +507,31 @@ If we encounter a `[` we recursively call the `run` function itself, looping
 until the corresponding `]` lands on a `tapePos` that doesn't have `\0` on the
 tape.
 
+If you're on Nim 0.11 or a newer version, you'll run into another problem: The
+`inc` and `dec` procs for `char`s have overflow (and underflow) checks. This
+means that when we have the character `\0` and decrement it, we end up with a
+runtime error! Instead, in brainfuck, we want to wrap around and get `\255`
+instead. We cold use a `uint8` instead of a `char`, because unsigned ints wrap
+around in Nim. But then we have to convert that `uint8` to a `char` sometimes
+and the other way around.  A more convenient way is to define our own,
+non-overflow-checking `xinc` and `xdec` procs:
+
+```nimrod
+{.push overflowchecks: off.}
+proc xinc(c: var char) = inc c
+proc xdec(c: var char) = dec c
+{.pop.}
+```
+
+We use Nim's pragma system to disable overflow checks just for this part of the
+code, not touching the settings for the rest of the program. Now of course two
+cases have to change:
+
+```nimrod
+      of '+': xinc tape[tapePos]
+      of '-': xdec tape[tapePos]
+```
+
 And that's it. We have a working brainfuck interpreter now. To test it, we
 create an `examples` directory containing these 3 files:
 [helloworld.b](/static/examples/nim/1/helloworld.b), [rot13.b](/static/examples/nim/1/rot13.b),
@@ -604,8 +629,8 @@ proc compile(code: string): PNimrodNode {.compiletime.} =
 
   for c in code:
     case c
-    of '+': addStmt "inc tape[tapePos]"
-    of '-': addStmt "dec tape[tapePos]"
+    of '+': addStmt "xinc tape[tapePos]"
+    of '-': addStmt "xdec tape[tapePos]"
     of '>': addStmt "inc tapePos"
     of '<': addStmt "dec tapePos"
     of '.': addStmt "stdout.write tape[tapePos]"
@@ -651,11 +676,11 @@ During compilation the generated code is printed:
 var tape: array[1000000, char]
 var codePos = 0
 var tapePos = 0
-inc tape[tapePos]
+xinc tape[tapePos]
 inc tapePos
-inc tape[tapePos]
+xinc tape[tapePos]
 while tape[tapePos] != '\0':
-  dec tape[tapePos]
+  xdec tape[tapePos]
 inc tapePos
 tape[tapePos] = stdin.readChar
 stdout.write tape[tapePos]
@@ -906,7 +931,7 @@ a `0` if we have reached `EOF`. We use `readCharEOF` to convert this into a
 proc readCharEOF*(input: Stream): char =
   result = input.readChar
   if result == '\0': # Streams return 0 for EOF
-    result = 255.chr # BF assumes EOF to be -1
+    result = '\255'  # BF assumes EOF to be -1
 ```
 
 At this point you may notice that the order of identifier declarations matters
