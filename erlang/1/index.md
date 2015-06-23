@@ -577,7 +577,9 @@ That's kind of an ugly command to run the app, but the app is now something
 other people can use to pull it within their own systems.
 
 In order to run it ourselves and actually ship it to customers, we will need to
-build a release.
+build a release. In any other case, though, you may want to [publish your
+library as a Hex package](http://www.rebar3.org/v3.0/docs/publishing-packages)
+with the help of the [proper rebar3 plugin](http://www.rebar3.org/v3.0/docs/using-available-plugins#hex-package-management).
 
 ![](/static/images/erlang/1/y-y-y.gif)
 
@@ -783,7 +785,7 @@ Adding `meck` can be done by declaring `rebar.config` dependencies:
 {profiles, [
     {test, [
         {deps, [
-          {meck, {git, "https://github.com/eproxus/meck.git", {tag, "0.8.1"}}}
+          {meck, "0.8.2"}
         ]}
     ]},
     %% called as `rebar3 as prod <command>`
@@ -973,8 +975,7 @@ And there we go, we can run the tests:
 λ → rebar3 ct
 → rebar3 ct
 ===> Verifying dependencies...
-===> Fetching meck ({git,"https://github.com/eproxus/meck.git",
-                                {tag,"0.8.2"}})
+===> Fetching meck ({pkg,<<"meck">>,<<"0.8.2">>})
 ===> Compiling meck
 ===> Compiling muumuu
 ===> Running Common Test suites...
