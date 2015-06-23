@@ -7,26 +7,17 @@ Fortunately, since the years of Emakefiles, reltool and systools, the Erlang
 community has stood up and improved its tooling continuously.
 
 Rebar has been improving non-stop and keeps getting better for many functions.
-It does depend on Reltool for releases, and despite its power, Reltool is hardly
-usable.
-
-That's why Relx came out after the fact. It's a tool to help build releases
-easily.
+The newest generation, Rebar3, tries to provide an end-to-end experience to
+building Erlang projects.
 
 Along with [installing Erlang](https://www.erlang-solutions.com/downloads)
-(version R16B03-1 at least), getting a hold of rebar and Relx is all you're
-gonna need.
+(version R16B03-1 at least), getting a hold of Rebar3 is all you're gonna need.
 
 For rebar, just [download it and follow the
-instructions](https://github.com/rebar/rebar/#downloading). Rebar will
+instructions](http://www.rebar3.org/v3.0/docs/getting-started). Rebar3 will
 basically generate a self-executable that you can store in your repository, or
-install globally on your computer. This tutorial expects that you're using a
-recent version (>= 2.2.0), older ones execute commands differently and will
-explode in your face.
-
-In the case of [relx](http://relx.org/), its presence isn't nearly as pervasive
-for Erlang users, so I tend to still include it in repositories I ship it with
-for people who want to build it.
+install globally on your computer. This tutorial expects that you have
+installed it in your system and made it available in your `$PATH`.
 
 Once they're all installed somewhere in your system, arm yourself with the text
 editor or IDE of your choice (mine is Vim, because I'm a terrible person) and
@@ -422,11 +413,11 @@ src/
   - muumuu_fsm.erl
 ```
 
-That's all you need in terms of structure if you have rebar installed in your
+That's all you need in terms of structure if you have rebar3 installed in your
 system.
 
 Add a file in `src/` called `muumuu.app.src`. This file is basically
-telling Erlang (and rebar) what the library is:
+telling Erlang (and rebar3) what the library is:
 
 ```erlang
 {application, muumuu, [
@@ -563,17 +554,15 @@ module](http://www.erlang.org/doc/man/sys.html))
 With that code in place, we can compile and run the entire application:
 
 ```
-λ → rebar compile
-==> how-i-start (compile)
-Compiled src/muumuu_app.erl
-Compiled src/muumuu_sup.erl
-Compiled src/muumuu_fsm.erl
+λ → rebar3 compile
+===> Verifying dependencies...
+===> Compiling muumuu
 ```
 
 With this compiled we can run it, with a funky command:
 
 ```
-λ → erl -pa ebin -eval 'application:ensure_all_started(muumuu).' -noshell
+λ →  erl -env ERL_LIBS _build/default/lib -eval 'application:ensure_all_started(muumuu).' -noshell
 To Start, Press Any Key.
 > any
 Check core temperature? (Y/N)
@@ -588,7 +577,9 @@ That's kind of an ugly command to run the app, but the app is now something
 other people can use to pull it within their own systems.
 
 In order to run it ourselves and actually ship it to customers, we will need to
-build a release.
+build a release. In any other case, though, you may want to [publish your
+library as a Hex package](http://www.rebar3.org/v3.0/docs/publishing-packages)
+with the help of the [proper rebar3 plugin](http://www.rebar3.org/v3.0/docs/using-available-plugins#hex-package-management).
 
 ![](/static/images/erlang/1/y-y-y.gif)
 
@@ -604,9 +595,7 @@ ebin/
 ```
 
 At the simplest level. A release is basically a group of applications put
-together. For this reason, we'll change the directory structure a bit and add
-the `relx` executable in there (the `relx` adoption is still low enough that
-it's worth shipping with the code):
+together. For this reason, we'll change the directory structure a bit:
 
 ```
 apps/
@@ -614,8 +603,6 @@ apps/
         - src/
         - ebin/
 rebar.config
-relx
-relx.config
 ```
 
 All applications you need will go into `apps/`. Here I just moved `src/` to
@@ -624,58 +611,48 @@ All applications you need will go into `apps/`. Here I just moved `src/` to
 The rebar.config file looks like this:
 
 ```erlang
-%% Tell rebar about this directory's structure
-{lib_dirs, ["apps", "deps"]}.
-{sub_dirs, ["apps/*"]}.
+{relx, [
+    {release, {muumuu, "1.0.0"},
+     %% list of apps to include
+     [muumuu]},
 
-%% Build a release when compiling
-{post_hooks,[{compile, "./relx"}]}.
+    %% Don't ship an Erlang VM by default
+    {include_erts, false}
+]}.
+
+{profiles, [
+    %% called as `rebar3 as prod <command>`
+    {prod, [
+        {relx, [ % override relx specifically
+          {include_src, false}, % don't include source code
+          {include_erts, true}  % include the VM in the release
+        ]}
+    ]}
+]}.
 ```
 
-This basically means that calling `rebar compile` will indirectly call `relx` to
-build the release.
-
-to build the release, `relx.config` contains all the instructions:
-
-```erlang
-{paths, ["apps", "deps"]}.
-{default_release, muumuu, "0.1.0"}.
-
-%% comment this line for a release that ships its own Erlang VM
-{include_erts, false}.
-%% uncomment this line to ship a release without the source code included
-% {include_src, false}.
-
-
-{release, {muumuu, "0.1.0"},
- %% list of apps to include
- [muumuu]}.
-```
-
-This will create a release that will only include Erlang source code, but use
-the currently installed Erlang VM to run things. Then the magic happens:
+This basically just tells rebar3 what the release-building tool it includes
+(relx) should do to give us our release. The release will only include our
+custom Erlang code, and use the currently installed Erlang VM to run things
+rather than installing a fully self-contianed program. Then the magic happens:
 
 ```
-λ → rebar compile
-==> muumuu (compile)
-==> how-i-start (compile)
-Starting relx build process ...
-Resolving OTP Applications from directories:
-    /Users/ferd/code/self/how-i-start/apps
-    /Users/ferd/.kerl/builds/R16B03-1/release_R16B03-1/lib
-
-Resolving available releases from directories:
-    /Users/ferd/code/self/how-i-start/apps
-    /Users/ferd/.kerl/builds/R16B03-1/release_R16B03-1/lib
-
-Resolved muumuu-0.1.0
-release successfully created!
+λ → rebar3 release
+===> Verifying dependencies...
+===> Compiling muumuu
+===> Starting relx build process ...
+===> Resolving OTP Applications from directories:
+          /Users/ferd/code/self/howistart-erlang1-code/release/_build/default/lib
+          /Users/ferd/code/self/howistart-erlang1-code/release/apps
+          /Users/ferd/.kerl/builds/17.4/release_17.4/lib
+===> Resolved muumuu-1.0.0
+===> release successfully created!
 ```
 
 And a release is born! To run it:
 
 ```
-λ → ./_rel/muumuu/bin/muumuu -noshell
+λ → ./_build/default/rel/muumuu/bin/muumuu -noshell
 To Start, Press Any Key.
 >
 ```
@@ -714,41 +691,47 @@ bother?).
 In more serious apps, tweaking your VM options can be worthwhile, but outside of
 this text's scope.
 
-The relx config file needs an update too:
+The rebar3 config file needs an update too:
 
 ```erlang
-{paths, ["apps", "deps"]}.
-{default_release, muumuu, "1.0.0"}.
+{relx, [
+    {release, {muumuu, "1.0.0"},
+     %% list of apps to include
+     [muumuu]},
 
-%% comment this line for a release that ships its own Erlang VM
-{include_erts, false}.
-%% uncomment this line to ship a release without the source code included
-% {include_src, false}.
+    %% Don't ship an Erlang VM by default
+    {include_erts, false},
 
-{release, {muumuu, "1.0.0"},
- %% list of apps to include
- [muumuu]}.
+    {vm_args, "./config/vm.args"}
+]}.
 
-{vm_args, "./config/vm.args"}.
+{profiles, [
+    %% called as `rebar3 as prod <command>`
+    {prod, [
+        {relx, [ % override relx specifically
+          {include_src, false}, % don't include source code
+          {include_erts, true}  % include the VM in the release
+        ]}
+    ]}
+]}.
 ```
 
 The last line is the new one. Compile again and the arguments should implicitly
 be passed to the node:
 
 ```
-λ → rebar compile
-==> muumuu (compile)
-==> how-i-start (compile)
+λ → rebar3 release
+===> Verifying dependencies...
+===> Compiling muumuu
 ===> Starting relx build process ...
 ===> Resolving OTP Applications from directories:
-          /Users/ferd/code/self/how-i-start/apps
-          /Users/ferd/.kerl/builds/R16B03-1/release_R16B03-1/lib
-===> Resolving available OTP Releases from directories:
-          /Users/ferd/code/self/how-i-start/apps
-          /Users/ferd/.kerl/builds/R16B03-1/release_R16B03-1/lib
+          /Users/ferd/code/self/howistart-erlang1-code/release/_build/default/lib
+          /Users/ferd/code/self/howistart-erlang1-code/release/apps
+          /Users/ferd/.kerl/builds/17.4/release_17.4/lib
+          /Users/ferd/code/self/howistart-erlang1-code/release/_build/default/rel
 ===> Resolved muumuu-1.0.0
 ===> release successfully created!
-λ → ./_rel/muumuu/bin/muumuu
+λ → ./_build/default/rel/muumuu/bin/muumuu
 To Start, Press Any Key.
 > <Tab>
 Check core temperature? (Y/N)
@@ -799,14 +782,30 @@ Before going further, I'll say that the trick to getting this working is to use
 Adding `meck` can be done by declaring `rebar.config` dependencies:
 
 ```erlang
-{deps, [
-    {meck, "0.8.*", {git, "https://github.com/eproxus/meck.git", {tag, "0.8.1"}}}
+{profiles, [
+    {test, [
+        {deps, [
+          {meck, "0.8.2"}
+        ]}
+    ]},
+    %% called as `rebar3 as prod <command>`
+    {prod, [
+        ...
+    ]}
+  ]}
 ]}.
 ```
 
-Rebar pulls stuff from github, so at the very least, stick a tag or a commit
-hash in there, and not a branch that can be mutable. Call in `rebar get-deps
-compile` and it will be available for tests.
+Note that rather than having a top-level `deps` entry as we usually would, we
+define this one to be into the `test` profile. This will allow the dependency
+to only be fetched and used when running tests, and to avoid bundling it when
+shipping the application.
+
+Rebar3 pulls stuff from github for this one
+([packages](http://www.rebar3.org/v3.0/docs/dependencies-1#package-manager-dependencies)
+are also an option), so at the very least, stick a tag or a commit hash in
+there, and not a branch that can be mutable. Rebar3 will add it to a lock file
+when it fetches and compiles it later.
 
 Now back to `muumuu_SUITE`. Time to set up the state:
 
@@ -970,27 +969,24 @@ That one makes an assertion on a regular expression with `re:run/3`, and the
 rest is similar to what we did in `in/1`. We receive the output, match it, and
 that's it.
 
-And there we go, we can run the tests (remember, you need to have called
-`rebar get-deps compile` before getting here, so meck is there and built):
+And there we go, we can run the tests:
 
 ```
-λ → rebar ct -r skip_deps=true
-==> muumuu (ct)
-DONE.
-Testing apps.muumuu: TEST COMPLETE, 1 ok, 0 failed of 1 test cases
+λ → rebar3 ct
+→ rebar3 ct
+===> Verifying dependencies...
+===> Fetching meck ({pkg,<<"meck">>,<<"0.8.2">>})
+===> Compiling meck
+===> Compiling muumuu
+===> Running Common Test suites...
 
-WARN:  'ct' command does not apply to directory /Users/ferd/code/self/how-i-start
+<test output omitted>
+
+All 1 tests passed.
 ```
 
-For a non-release (something where `src/` is still at the top level), just
-calling `rebar ct` would work, without testing all the dependencies, which is
-legitimately a crapload nicer. To skip testing the dependencies but still
-accounting for them, the `-r skip_deps=true` arguments need to be added.
-
-In practice, it will often make sense to develop all the applications
-independently, running their own tests, and only later pull them all in a
-release structure to build and ship a release.
-
-After this, I go do something else because I'm pretty much done. You can see all the [code here](https://github.com/ferd/howistart-erlang1-code).
+After this, I check in the rebar lock files into version control, and I go do
+something else because I'm pretty much done. You can see all the [code
+here](https://github.com/ferd/howistart-erlang1-code).
 
 ![](/static/images/erlang/1/outdoors.gif)
