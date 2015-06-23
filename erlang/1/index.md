@@ -716,8 +716,8 @@ The rebar3 config file needs an update too:
 ]}.
 ```
 
-The last line is the new one. Compile again and the arguments should implicitly
-be passed to the node:
+The last line above the profiles is the new one. Compile again and the
+arguments should implicitly be passed to the node:
 
 ```
 λ → rebar3 release
@@ -801,11 +801,10 @@ define this one to be into the `test` profile. This will allow the dependency
 to only be fetched and used when running tests, and to avoid bundling it when
 shipping the application.
 
-Rebar3 pulls stuff from github for this one
-([packages](http://www.rebar3.org/v3.0/docs/dependencies-1#package-manager-dependencies)
-are also an option), so at the very least, stick a tag or a commit hash in
-there, and not a branch that can be mutable. Rebar3 will add it to a lock file
-when it fetches and compiles it later.
+Rebar3 pulls stuff from a package repository for this one ([github
+dependencies](http://www.rebar3.org/v3.0/docs/dependencies) are also an
+option). Rebar3 will add it to a lock file when it fetches and compiles it
+later.
 
 Now back to `muumuu_SUITE`. Time to set up the state:
 
