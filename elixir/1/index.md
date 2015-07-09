@@ -602,7 +602,7 @@ iex(room1@COMPUTER-NAME)> orange = {:orange, :"room2@COMPUTER-NAME"}
 iex(room1@COMPUTER-NAME)> blue = {:blue, :"room1@COMPUTER-NAME"}
 {:blue, :"room1@COMPUTER-NAME"}
 iex(room1@COMPUTER-NAME)> Portal.Door.get(orange)
-[1, 2, 3]
+[3, 2, 1]
 iex(room1@COMPUTER-NAME)> Portal.Door.get(blue)
 [4]
 ```
