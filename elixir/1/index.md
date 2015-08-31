@@ -352,7 +352,7 @@ iex> Portal.Door.get(:blue)
 
 Our portal transfer seems to work as expected. Note that the data is in reverse order in the left/orange door in the example above. That is expected because we want the end of the list (in this case the number 3) to be the first data pushed into the right/blue door.
 
-One difference in the snippet above, compared to the one we saw at the beginning of this tutorial, is that our portal is currently being printed as a struct: `%Portal{left: :orange, right: blue}`. It would be nice if we actually had a printed representation of the portal transfer, allowing us to see the portal process as we push data.
+One difference in the snippet above, compared to the one we saw at the beginning of this tutorial, is that our portal is currently being printed as a struct: `%Portal{left: :orange, right: :blue}`. It would be nice if we actually had a printed representation of the portal transfer, allowing us to see the portal process as we push data.
 
 That's what we will do next.
 
