@@ -172,9 +172,11 @@ It can serve requests directly from the live internet—no intermediary required
 We can do something more interesting than just say hello.
 Let's take a city as input, call out to a weather API, and forward a response with the temperature.
 The [OpenWeatherMap](http://openweathermap.org/)
- provides a [simple and free API](http://openweathermap.org/api)
- for [current forecast info](http://openweathermap.org/current),
- which we can [query by city](http://api.openweathermap.org/data/2.5/weather?q=Tokyo).
+provides a [simple and free API](http://openweathermap.org/api)
+for [current forecast info](http://openweathermap.org/current).
+[Register](http://home.openweathermap.org/users/sign_up) for a free
+account to get an API key. OpenWeatherMap's API can be [queried by
+city](http://api.openweathermap.org/data/2.5/weather?APPID=YOUR_API_KEY&q=Tokyo).
 It returns responses like this (partially redacted):
 
 ```json
@@ -233,7 +235,7 @@ Let's write a function to do that.
 
 ```go
 func query(city string) (weatherData, error) {
-    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
+    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?APPID=YOUR_API_KEY&q=" + city)
     if err != nil {
         return weatherData{}, err
     }
@@ -337,7 +339,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 }
 
 func query(city string) (weatherData, error) {
-    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
+    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?APPID=YOUR_API_KEY&q=" + city)
     if err != nil {
         return weatherData{}, err
     }
@@ -397,7 +399,7 @@ And we'll add a simple line of logging, so we can see what's happening.
 type openWeatherMap struct{}
 
 func (w openWeatherMap) temperature(city string) (float64, error) {
-    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?q=" + city)
+    resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?APPID=YOUR_API_KEY&q=" + city)
     if err != nil {
         return 0, err
     }
