@@ -805,7 +805,7 @@ test-suite tests
   hs-source-dirs:      tests
   build-depends:       base,
                        bassbull,
-                       hspec >= 2.0 && < 2.1
+                       hspec
   default-language:    Haskell2010
 ```
 
