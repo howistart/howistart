@@ -1,23 +1,17 @@
 My name is Chris. I teach Haskell to people that are new to programming and as well as long-time coders. Haskell is a general purpose programming language that is most useful to mere mortals.
 
-I'm going to show you how to write a package in Haskell and interact
-with the code inside of it.
+I'm going to show you how to write a package in Haskell and interact with the code inside of it.
 
 
 ## Installing tools for writing Haskell code
 
 
-The most popular compiler for Haskell is `GHC` and you use `Cabal` alongside `GHC` to manage projects and their dependencies. Packaging itself is part of `GHC` via `ghc-pkg`.
+The most popular compiler for Haskell is `GHC` and you use `Cabal` alongside `GHC` to manage projects and their dependencies. Packaging itself is part of `GHC` via `ghc-pkg`. However, we're going to use Stack to manage _all_ of this for us.
 
-To get GHC and Cabal installed, use one of the following links:
+Start by [getting Stack installed](http://haskellstack.org).
 
-* Windows: [https://www.haskell.org/downloads/windows](https://www.haskell.org/downloads/windows)
 
-* OS X: [https://www.haskell.org/downloads/osx](https://www.haskell.org/downloads/osx)
-
-* Linux: [https://www.haskell.org/downloads/linux](https://www.haskell.org/downloads/linux)
-
-After you've finished the install instructions, `ghc`, `cabal`, and `ghci` should all be in your path. `ghci` is the REPL (read-eval-print loop) for Haskell, though as often as not, you'll use `cabal repl` to invoke a REPL that is aware of your project and its dependencies.
+After you've finished the install instructions, `stack` should all be in your path. `ghci` is the REPL (read-eval-print loop) for Haskell, though as often as not, you'll use `stack ghci` to invoke a REPL that is aware of your project and its dependencies.
 
 
 ## What we're going to make
@@ -43,38 +37,22 @@ $ tree
 .
 ├── LICENSE
 ├── Setup.hs
-├── cabal.sandbox.config
 ├── bassbull.cabal
 ├── src
-│   ├── Main.hs
+│   ├── Main.hs
+├── stack.yaml
 4 directories, 7 files
 ```
-
-
-Here's where each of those files are going to come from.
-
-
-* We'll use `cabal init` to generate `LICENSE`, `Setup.hs`,
-and `bassbull.cabal`.
-
-* When we initialize our cabal sandbox, later it will generate `cabal.sandbox.config`.
-
-* You'll need to `mkdir src` and `touch src/Main.hs` for your
-`src/Main.hs` file to exist and that's where we'll be putting our
-code after we've made our project directory.
-
 
 Ordinarily I'd structure things a little more, but there isn't a lot to this project. Onward!
 
 
 ## Getting your project started
 
-
-First we're going to make our directory for our project wherever we tend to stash our work. If we're on a Unix-alike, that'll look something like:
+The command I used to kick off the project non-interactively (edit as appropriate for your project):
 
 ```bash
-$ mkdir bassbull
-$ cd bassbull
+$ stack new bassbull simple
 ```
 
 Now we're going to download our test data now that we're inside the directory of our `bassbull` project.
@@ -90,23 +68,10 @@ It should be about 2.3 MB when it's all said and done.
 
 Having done that, we're now going to use `Cabal`, our GHC Haskell dependency manager and build tool, to create some initial files for us. You have a couple options here. You can use the interactive helper or you can define everything non-interactively in one go.
 
-To do it interactively:
-
-```bash
-$ cabal init
-```
-
-And the command I used to do it non-interactively (edit as appropriate for your project):
-
-```bash
-$ cabal init -n -l BSD3 --is-executable --language=Haskell2010 -u bitemyapp.com \
-  -a 'Chris Allen' -c Data -s 'Processing some CSV data' -p bassbull
-```
-
-
 Before we start making changes, I'm going to init my version control (git, for me) so I can track my changes and not lose any work.
 
 ```bash
+$ cd bassbull
 $ git init
 $ git add .
 $ git commit -am "Initial commit"
@@ -119,39 +84,26 @@ bassbull project.
 
 ```
 dist
+dist-*
 cabal-dev
 *.o
 *.hi
 *.chi
 *.chs.h
-.virtualenv
+*.dyn_o
+*.dyn_hi
 .hpc
 .hsenv
 .cabal-sandbox/
 cabal.sandbox.config
-cabal.config
 *.prof
-*.hp
 *.aux
+*.hp
+*.eventlog
+.stack-work/
 ```
 
-You might be wondering why we're telling `git` to ignore something
-called a "cabal sandbox". Cabal, unlike the package managers in other
-language ecosystems, requires direct and transitive dependencies to
-have compatible versions. For contrast, Maven will use the "closest"
-version. To avoid packages having conflicts, Cabal introduced
-sandboxes which let you do builds of your projects in a way that
-doesn't use your user package-db. Your user package-db is global to
-all your builds on your user account and this is almost never what you
-want. This is not dissimilar from `virtualenv` in the Python
-community. The `.cabal-sandbox` directory is where our build artifacts
-will go when we build our project or test cases. We don't want to
-version control that as it would bloat the git repository and
-doesn't need to be version controlled.
-
-
 ## Editing the Cabal file
-
 
 First we need to fix up our `cabal` file a bit. Mine is named `bassbull.cabal` and is in the top level directory of the project.
 
@@ -167,7 +119,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Chris Allen
 maintainer:          cma@bitemyapp.com
-copyright:           2014, Chris Allen
+copyright:           2016, Chris Allen
 category:            Data
 build-type:          Simple
 cabal-version:       >=1.10
@@ -183,14 +135,14 @@ executable bassbull
   default-language:    Haskell2010
 ```
 
-A few notable changes:
+A few things to note:
 
-* Set the description so Cabal would stop squawking about it.
-* Set `hs-source-dirs` to `src` so Cabal knows where my modules are.
-* Added a named executable stanza to the Cabal file so I can build a binary by that name and run it.
-* Set `main-is` to `Main.hs` in the executable stanza so the compiler knows what main function to use for that binary.
-* Set `ghc-options` to `-Wall` so we get the *rather* handy warnings GHC offers on top of the usual type checking.
-* Added the libraries our project will use to `build-depends`.
+* The description is so people could know what the package is about.
+* The `hs-source-dirs` includes `src` so Cabal knows where my modules are.
+* An executable stanza with the name bassbull is in the Cabal file so we can build a binary by that name and run it.
+* `main-is` is set to `Main.hs` in the executable stanza so the compiler knows what main function to use for that binary.
+* We have `ghc-options` with `-Wall` so we get the *rather* handy warnings GHC offers on top of the usual type checking.
+* We included the libraries our project will use in `build-depends`.
 
 
 ## Building and interacting with your program
@@ -208,47 +160,31 @@ One thing to note is that for a module to work as a `main-is` target for GHC, it
 
 For now, we've left Main very simple, making it just a `putStrLn` of the string `"Hello"`. To validate that everything is working, let's build and run this program.
 
-We're going to create a Cabal sandbox so that our dependencies are isolated to this project.
+Then we install our dependencies by building our project. This can take some time on the first run, but Stack will cache and share dependencies across your projects automatically.
 
 ```bash
-$ cabal sandbox init
+$ stack build
 ```
 
-Then we install our dependencies. These should get installed into the
-Cabal sandbox package-db now that our sandbox has been created.
-Otherwise they'd get installed into our user package-db located in
-our home directory, which would be global to all the projects on our
-current user account. This can take some time on first run.
+If this succeeds, we should get a binary named `bassbull`. To run this, do the following.
 
 ```bash
-$ cabal install --only-dependencies
-```
-
-Now we're going to build our project.
-
-```bash
-$ cabal build
-```
-
-If this succeeds, we should get a binary named `bassbull` in `dist/build/bassbull`. To run this, do the following.
-
-```bash
-$ ./dist/build/bassbull/bassbull
+$ stack exec bassbull
 hello
-$
 ```
 
 If everything is in place, let's move onto writing a little csv processor.
 
+
 ## Writing a program to process csv data
 
 
-One thing to note before we begin is that you can fire up a project-aware Haskell REPL using `cabal repl`. The benefit of doing so is that you can write and type-check code interactively as you explore new and unfamiliar libraries or just to refresh your memory about existing code.
+One thing to note before we begin is that you can fire up a project-aware Haskell REPL using Stack's GHCi command. The benefit of doing so is that you can write and type-check code interactively as you explore new and unfamiliar libraries or just to refresh your memory about existing code.
 
 You can do so by running it in your shell like so:
 
 ```bash
-$ cabal repl
+$ stack ghci
 ```
 
 If you do, you should see a bunch of stuff about loading packages
@@ -263,7 +199,7 @@ Prelude Main>
 Now we can load our `src/Main.hs` in the REPL.
 
 ```
-$ cabal repl
+$ stack ghci
 Preprocessing executable 'bassbull' for bassbull-0.1.0.0...
 GHCi, version 7.8.3: http://www.haskell.org/ghc/  :? for help
 Loading package ghc-prim ... linking ... done.
@@ -610,13 +546,13 @@ Here `n` is the sum we're carrying along as fold the `Vector` of `BaseballStats`
 First we're going to rebuild the project.
 
 ```bash
-$ cabal build
+$ stack build
 ```
 
 Then, assuming we have the `batting.csv` I mentioned earlier in our current directory, we can run our program and get the results.
 
 ```bash
-$ ./dist/build/bassbull/bassbull
+$ stack exec bassbull
 Total atBats was: Right 4858210
 $
 ```
@@ -987,29 +923,22 @@ the library module we've exposed. This is also a `Main` module
 with its own `main` file because we execute our test suite as a binary
 just like we do with executables.
 
-With all that in place, we'll install the dependencies our tests need.
+With all that in place, we'll build and run the actual tests.
 
 ```bash
-$ cabal install --enable-tests
+$ stack test
 ```
 
-Then to run the actual tests, we'll run `cabal test`.
-
-```bash
-$ cabal test
-```
-
-Incidentally, `cabal test` is just a shortcut for building `tests`
-specifically, then running the executable produced to see test output.
+`stack test` is just a shortcut for building `tests` specifically, then running the executable produced to see test output.
 
 You aren't limited to building the `tests` binary and running your
-tests in that manner. You can also pass `cabal repl` an argument
+tests in that manner. You can also pass `stack ghci` an argument
 to make it load your tests. This can be faster as the REPL uses an
 interpreter and can reload your code very quickly - much more quickly
 than doing a full build & execution run.
 
 ```bash
-$ cabal repl tests
+$ stack ghci bassbull:tests
 ```
 
 The above will then give you a REPL which can see anything the build
@@ -1099,8 +1028,7 @@ $ cabal update
 $ cabal unpack ghc-mod
 # At time of writing, this was the current version. Change as necessary.
 $ cd ./ghc-mod-5.2.1.1
-$ cabal sandbox init
-$ cabal install
+$ stack build
 $ sudo ln -s `pwd`/.cabal-sandbox/bin/ghc-mod /usr/bin/ghc-mod
 $ sudo ln -s `pwd`/.cabal-sandbox/bin/ghc-modi /usr/bin/ghc-modi
 ```
