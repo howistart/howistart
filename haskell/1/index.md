@@ -49,13 +49,13 @@ Ordinarily I'd structure things a little more, but there isn't a lot to this pro
 
 ## Getting your project started
 
-The command I used to kick off the project non-interactively (edit as appropriate for your project):
+We'll use `Stack`, our GHC Haskell dependency manager and build tool, to create some initial files for us.
 
 ```bash
 $ stack new bassbull simple
 ```
 
-Now we're going to download our test data now that we're inside the directory of our `bassbull` project.
+Here `bassbull` is the name of our project and `simple` is the project template we're using. Now we're going to download our test data now that we're inside the directory of our `bassbull` project.
 
 You can download the data from [here](https://raw.githubusercontent.com/bitemyapp/csvtest/master/batting.csv). If you want to download it via the terminal on a Unix-alike (Mac, Linux, BSD, etc) you can do so via:
 
@@ -64,9 +64,6 @@ $ curl -0 https://raw.githubusercontent.com/bitemyapp/csvtest/master/batting.csv
 ```
 
 It should be about 2.3 MB when it's all said and done.
-
-
-Having done that, we're now going to use `Cabal`, our GHC Haskell dependency manager and build tool, to create some initial files for us. You have a couple options here. You can use the interactive helper or you can define everything non-interactively in one go.
 
 Before we start making changes, I'm going to init my version control (git, for me) so I can track my changes and not lose any work.
 
@@ -684,9 +681,9 @@ main = do
 Now we're going to double-check that our code is working:
 
 ```bash
-$ cabal build
+$ stack build
 ...(stuff happens)...
-$ ./dist/build/bassbull/bassbull
+$ stack exec bassbull
 Total atBats was: Right 4858210
 ```
 
@@ -798,9 +795,7 @@ foldrRecords f = go
 
 ## Adding tests
 
-Now we're going to add tests to our package. First we are going to add a
-test suite to our `bassbull.cabal` file. The name of our test suite will
-just be `tests`.
+Now we're going to add tests to our package. First we are going to add a test suite to our `bassbull.cabal` file. The name of our test suite will just be `tests`.
 
 ```
 test-suite tests
@@ -814,11 +809,7 @@ test-suite tests
   default-language:    Haskell2010
 ```
 
-We're also going to add a library and shift over some code so that our
-package is exposed as a proper library rather than only working as an
-executable. We're exposing a single module named `Bassbull`. With
-an `hs-source-dirs` of `src` and an exposed module named `Bassbull`,
-Cabal will expect a file to exist at `src/Bassbull.hs`.
+We're also going to add a library and shift over some code so that our package is exposed as a proper library rather than only working as an executable. We're exposing a single module named `Bassbull`. With an `hs-source-dirs` of `src` and an exposed module named `Bassbull`, Cabal will expect a file to exist at `src/Bassbull.hs`.
 
 ```
 library
@@ -832,8 +823,7 @@ library
   default-language:    Haskell2010
 ```
 
-We need to change our executable in the Cabal file so
-that it depends on our library. No point duplicating the code!
+We need to change our executable in the Cabal file so that it depends on our library. No point duplicating the code!
 
 
 ```
@@ -849,9 +839,7 @@ executable bassbull
 ```
 
 
-Next we're going to create a file named `src/Bassbull.hs` and shift
-code from `src/Main.hs` over to it. Note we've also refactored our
-`main` function so it takes an argument of what csv file to process.
+Next we're going to create a file named `src/Bassbull.hs` and shift code from `src/Main.hs` over to it. Note we've also refactored our `main` function so it takes an argument of what csv file to process.
 
 ```haskell
 -- src/Bassbull.hs
@@ -880,8 +868,7 @@ getAtBatsSum battingCsv = do
   return $ F.foldr summer 0 (baseballStats csvData)
 ```
 
-And here's our defrocked `src/Main.hs` which is now only responsible
-for fronting the executable.
+And here's our defrocked `src/Main.hs` which is now only responsible for fronting the executable.
 
 ```haskell
 module Main where
@@ -894,13 +881,9 @@ main = do
   putStrLn $ "Total atBats was: " ++ (show summed)
 ```
 
-Next we'll create a directory named `tests` and add a file named
-`Tests.hs` to it.
+Next we'll create a directory named `tests` and add a file named `Tests.hs` to it.
 
-For our tests, we're going to use [HSpec](http://hspec.github.io/)
-because the library is easy to use, the syntax is clean, and the
-author [Simon Hengel](https://github.com/sol) is one of the most
-responsive and helpful I've run into in open source.
+For our tests, we're going to use [HSpec](http://hspec.github.io/) because the library is easy to use, the syntax is clean, and the author [Simon Hengel](https://github.com/sol) is one of the most responsive and helpful I've run into in open source.
 
 Here's our `tests/Tests.hs` file
 
@@ -918,10 +901,7 @@ main = hspec $ do
       theSum `shouldBe` 4858210
 ```
 
-There's not too much here. We're importing `Bassbull`, which is
-the library module we've exposed. This is also a `Main` module
-with its own `main` file because we execute our test suite as a binary
-just like we do with executables.
+There's not too much here. We're importing `Bassbull`, which is the library module we've exposed. This is also a `Main` module with its own `main` file because we execute our test suite as a binary just like we do with executables.
 
 With all that in place, we'll build and run the actual tests.
 
@@ -931,29 +911,17 @@ $ stack test
 
 `stack test` is just a shortcut for building `tests` specifically, then running the executable produced to see test output.
 
-You aren't limited to building the `tests` binary and running your
-tests in that manner. You can also pass `stack ghci` an argument
-to make it load your tests. This can be faster as the REPL uses an
-interpreter and can reload your code very quickly - much more quickly
-than doing a full build & execution run.
+You aren't limited to building the `tests` binary and running your tests in that manner. You can also pass `stack ghci` an argument to make it load your tests. This can be faster as the REPL uses an interpreter and can reload your code very quickly - much more quickly than doing a full build & execution run.
 
 ```bash
 $ stack ghci bassbull:tests
 ```
 
-The above will then give you a REPL which can see anything the build
-in your Cabal named `tests` can see. You can then run the `main`
-function or individual test suites - if you bother to split them out.
+The above will then give you a REPL which can see anything the build in your Cabal named `tests` can see. You can then run the `main` function or individual test suites - if you bother to split them out.
 
-Tests are useful and important in Haskell, although I often find I
-need *much* fewer of them. Often my process for working on an existing
-Haskell project will involve working on the code I'm changing with
-Emacs and a REPL instantiated via `cabal repl`. As my code starts
-passing the type-checker, I start running the tests as another
-layer of assurance that I'm doing the right thing.
+Tests are useful and important in Haskell, although I often find I need *much* fewer of them. Often my process for working on an existing Haskell project will involve working on the code I'm changing with Emacs and a REPL instantiated via `stack ghci`. As my code starts passing the type-checker, I start running the tests as another layer of assurance that I'm doing the right thing.
 
-I like having a lot of feedback and help from my computer when
-writing code!
+I like having a lot of feedback and help from my computer when writing code!
 
 
 ## Making your Haskell packages available to the Haskell community
@@ -990,11 +958,9 @@ uploading to Hackage see
 ## How I work
 
 
-When I'm working with Haskell code, I interact with my code in a few ways. One is that I'm writing the code itself in Emacs. I'll also have a terminal with a REPL open, usually via `cabal repl` as I am almost always working on a specific project.
+When I'm working with Haskell code, I interact with my code in a few ways. One is that I'm writing the code itself in Emacs. I'll also have a terminal with a REPL open, usually via `stack ghci` as I am almost always working on a specific project.
 
-My Emacs config is pretty sundry, it's just `haskell-mode` and `ghc-mod`. `ghc-mod` is where the real magic comes up. This is how I get things like "tell me the type of that sub-expression" via a keyboard shortcut without having to type the code into my REPL. One nice thing about ghc-mod is that it is just a little service that runs independently of your editor, so it works with vim and SublimeText as well.
-
-For a quick demonstration of how I work in Haskell (I don't show off everything in ghc-mod), [take a look at this video I made](https://www.youtube.com/watch?v=Li6oaO8x2VY).
+My Emacs config is pretty sundry, it's just `haskell-mode` and `flycheck`.
 
 My basic happy-path event-loop for writing Haskell is:
 
@@ -1002,7 +968,7 @@ My basic happy-path event-loop for writing Haskell is:
 
 2. Change/add/delete code
 
-3. `:reload` in the REPL. `ghc-mod` will give me type errors, but I sometimes like to see them in the REPL too.
+3. `:reload` in the REPL. `flycheck` will give me type errors, but I sometimes like to see them in the REPL too.
 
 4. Sometimes I'll use eta-reduction to refactor code. You can see an example of this [in this code review on StackExchange](http://codereview.stackexchange.com/questions/57843/update-map-in-haskell/57850#57850). Making code point-free makes the most sense when it's primarily about *composing* functions rather than about applying them.
 
@@ -1020,34 +986,9 @@ My diagnosis process when something *isn't* working:
 
 5. If something type-checks but doesn't work, I'll run the tests. If the coverage isn't catching it, I add it. This is less common for me in Haskell than you'd think. If I can frame the test as an assertion about some *property* the code should satisfy like with [QuickCheck](http://hackage.haskell.org/package/QuickCheck) I will do so. You can learn more about using QuickCheck in [Real World Haskell](http://book.realworldhaskell.org/read/testing-and-quality-assurance.html).
 
-One common mistake people make is not having `ghc-mod` and `ghc-modi` in a path that Emacs knows about. I recommend doing the following to install ghc-mod itself:
-
-```bash
-# We update so cabal-install knows about the latest versions of ghc-mod.
-$ cabal update
-$ cabal unpack ghc-mod
-# At time of writing, this was the current version. Change as necessary.
-$ cd ./ghc-mod-5.2.1.1
-$ stack build
-$ sudo ln -s `pwd`/.cabal-sandbox/bin/ghc-mod /usr/bin/ghc-mod
-$ sudo ln -s `pwd`/.cabal-sandbox/bin/ghc-modi /usr/bin/ghc-modi
-```
-
-I found this to be easier than fussing around with adding the sandbox binary directories to Emacs' search path.
-
-
-### ghc-mod
-
-* [Hackage page](https://hackage.haskell.org/package/ghc-mod)
-* [Github repository](https://github.com/kazu-yamamoto/ghc-mod)
-
 ### Emacs
 
-* [Haskell wiki section on Emacs and ghc-mod](https://www.haskell.org/haskellwiki/Emacs#ghc-mod)
-
-* [Installing ghc.el (ghc-mod integration) for Emacs](http://www.mew.org/~kazu/proj/ghc-mod/en/preparation.html)
-
-* [Using ghc-mod in Emacs](http://www.mew.org/~kazu/proj/ghc-mod/en/emacs.html)
+* [Haskell wiki section on Emacs](https://www.haskell.org/haskellwiki/Emacs)
 
 ### vim
 
@@ -1055,7 +996,7 @@ I found this to be easier than fussing around with adding the sandbox binary dir
 
 ### Sublime Text 2/3
 
-* [The SublimeHaskell plugin uses ghc-mod](https://github.com/SublimeHaskell/SublimeHaskell)
+* [The SublimeHaskell plugin](https://github.com/SublimeHaskell/SublimeHaskell)
 
 ### My personal dotfiles
 
