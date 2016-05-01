@@ -134,7 +134,7 @@ executable bassbull
 
 A few things to note:
 
-* The description is so people could know what the package is about.
+* The description tells people what the package is about.
 * The `hs-source-dirs` includes `src` so Cabal knows where my modules are.
 * An executable stanza with the name bassbull is in the Cabal file so we can build a binary by that name and run it.
 * `main-is` is set to `Main.hs` in the executable stanza so the compiler knows what main function to use for that binary.
