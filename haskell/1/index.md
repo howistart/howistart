@@ -6,10 +6,7 @@ I'm going to show you how to write a package in Haskell and interact with the co
 ## Installing tools for writing Haskell code
 
 
-The most popular compiler for Haskell is `GHC` and you use `Cabal` alongside `GHC` to manage projects and their dependencies. Packaging itself is part of `GHC` via `ghc-pkg`. However, we're going to use Stack to manage _all_ of this for us.
-
-Start by [getting Stack installed](http://haskellstack.org).
-
+We're going to use Stack to manage our project dependencies, compiler, building our code, and running our tests. Start by [getting Stack installed](http://haskellstack.org).
 
 After you've finished the install instructions, `stack` should all be in your path. `ghci` is the REPL (read-eval-print loop) for Haskell, though as often as not, you'll use `stack ghci` to invoke a REPL that is aware of your project and its dependencies.
 
