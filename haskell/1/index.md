@@ -6,7 +6,7 @@ I'm going to show you how to write a package in Haskell and interact with the co
 ## Installing tools for writing Haskell code
 
 
-We're going to use Stack to manage our project dependencies, compiler, building our code, and running our tests. Start by [getting Stack installed](http://haskellstack.org).
+We're going to use Stack to manage our project dependencies, compiler, building our code, and running our tests. Start by [getting Stack installed](http://docs.haskellstack.org/en/stable/install_and_upgrade/).
 
 After you've finished the install instructions, `stack` should all be in your path. `ghci` is the REPL (read-eval-print loop) for Haskell, though as often as not, you'll use `stack ghci` to invoke a REPL that is aware of your project and its dependencies.
 
@@ -52,7 +52,7 @@ We'll use `Stack`, our GHC Haskell dependency manager and build tool, to create 
 $ stack new bassbull simple
 ```
 
-Here `bassbull` is the name of our project and `simple` is the project template we're using. Now we're going to download our test data now that we're inside the directory of our `bassbull` project.
+Here `bassbull` is the name of our project and `simple` is the project template we're using. Now we're going to download our test data while inside the directory of our `bassbull` project.
 
 You can download the data from [here](https://raw.githubusercontent.com/bitemyapp/csvtest/master/batting.csv). If you want to download it via the terminal on a Unix-alike (Mac, Linux, BSD, etc) you can do so via:
 
@@ -134,7 +134,7 @@ A few things to note:
 * The description tells people what the package is about.
 * The `hs-source-dirs` includes `src` so Cabal knows where my modules are.
 * An executable stanza with the name bassbull is in the Cabal file so we can build a binary by that name and run it.
-* `main-is` is set to `Main.hs` in the executable stanza so the compiler knows what main function to use for that binary.
+* `main-is` is set to `Main.hs` in the executable stanza so the compiler knows which file contains the Main module and main function.
 * We have `ghc-options` with `-Wall` so we get the *rather* handy warnings GHC offers on top of the usual type checking.
 * We included the libraries our project will use in `build-depends`.
 
@@ -157,10 +157,11 @@ For now, we've left Main very simple, making it just a `putStrLn` of the string 
 Then we install our dependencies by building our project. This can take some time on the first run, but Stack will cache and share dependencies across your projects automatically.
 
 ```bash
+$ stack setup
 $ stack build
 ```
 
-If this succeeds, we should get a binary named `bassbull`. To run this, do the following.
+We did the `stack setup` just in case you didn't already have GHC installed. Note that you'll only have to do this once for a particular version of GHC. If this succeeds, we should get a binary named `bassbull`. To run this, do the following.
 
 ```bash
 $ stack exec bassbull
