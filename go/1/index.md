@@ -258,7 +258,7 @@ Functions encode behavior, and behaviors typically can fail.
 For us, the GET request against OpenWeatherMap can fail for any number of reasons,
 and the data returned might not be what we expect.
 In either case, we return a non-nil error to the client,
-who's expected to deal it in a way that makes sense in the calling context.
+who's expected to deal with it in a way that makes sense in the calling context.
 
 If the [http.Get](http://golang.org/pkg/net/http/#Get) succeeds,
 we [defer](http://golang.org/doc/effective_go.html#defer) a call to close the response body,
