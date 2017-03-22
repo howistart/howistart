@@ -151,7 +151,7 @@ Compile and run just as before.
 
 ```
 $ go build
-./hello
+$ ./hello
 ```
 
 And in another terminal, or your browser, make an HTTP request.
