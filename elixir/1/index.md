@@ -288,7 +288,7 @@ iex> age
 
 A struct is defined inside a module and takes the same name as the module. After the struct is defined, we can use the `%User{...}` syntax to define new structs or match on them.
 
-Let's open up `lib/portal.ex` and add some code to the `Portal` module. Note the current `Portal` module already has a function named `start/2`. Do not remove this function, we will talk about it in the next sections, for now just add the new contents below inside the `Portal` module:
+Let's open up `lib/portal.ex` and add some code to the `Portal` module. Note the current `Portal` module already has a function named `hello/0`. You can remove this function, then add the new contents inside the `Portal` module:
 
 ```elixir
 defstruct [:left, :right]
@@ -434,14 +434,16 @@ iex> Portal.push_right(portal)
 
 We got an exit error because there is no `:blue` door. You can see there is an `** (EXIT) no process` message following our function call. To fix the situation we are going to setup a supervisor that will be responsible for restarting a portal door whenever it crashes.
 
-Remember when we passed the `--sup` flag when creating our `portal` project? We passed that flag because supervisors typically run inside supervision trees and supervision trees are usually started as part of application. All the `--sup` flag does is to create a supervised structure by default which we can see in our `Portal` module:
+Remember when we passed the `--sup` flag when creating our `portal` project? We passed that flag because supervisors typically run inside supervision trees and supervision trees are usually started as part of application. All the `--sup` flag does is to create a supervised structure by default which we can see in our `Portal.Application` module in `lib/portal/application.ex:
 
 ```elixir
-defmodule Portal do
-  use Application
-
+defmodule Portal.Application do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
+  @moduledoc false
+  
+  use Application
+  
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
@@ -455,8 +457,6 @@ defmodule Portal do
     opts = [strategy: :one_for_one, name: Portal.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
-  # ... functions we have added ...
 end
 ```
 
