@@ -193,11 +193,17 @@ mode, giving us full speed:
 $ nim c hello
 $ time ./hello
 Hello World 100000000
-./hello  2.01s user 0.00s system 99% cpu 2.013 total
+
+real  0m1,137s
+user  0m1,136s
+sys   0m0,000s
 $ nim -d:release c hello
 $ time ./hello
 Hello World 100000000
-./hello  0.00s user 0.00s system 74% cpu 0.002 total
+
+real  0m0,002s
+user  0m0,000s
+sys   0m0,000s
 ```
 
 That's a bit too fast actually. The C compiler optimized away the entire `for`
@@ -208,37 +214,41 @@ To start a new project `nimble init` can generate a basic package config file:
 ```bash
 $ nimble init brainfuck
 ```
+
+This will start a simple wizard which will create a `.nimble` file for our brainfuck project.
+
 The newly created `brainfuck.nimble` should look like this:
 
 ```
-[Package]
-name          = "brainfuck"
-version       = "0.1.0"
-author        = "Anonymous"
-description   = "New Nimble project for Nim"
-license       = "BSD"
+# Package
 
-[Deps]
-Requires: "nim >= 0.10.0"
-```
-
-Let's add the actual author, a description, as well as the requirement for
-docopt, as described in [nimble's developers
-info](https://github.com/nim-lang/nimble/blob/master/developers.markdown).
-Most importantly, let's set the binary we want to create:
-
-```
-[Package]
-name          = "brainfuck"
 version       = "0.1.0"
 author        = "The 'How I Start Nim' Team"
 description   = "A brainfuck interpreter"
 license       = "MIT"
 
-bin           = "brainfuck"
+# Dependencies
 
-[Deps]
-Requires: "nim >= 0.10.0, docopt >= 0.1.0"
+requires "nim >= 0.17.3"
+```
+
+Let's add the requirement for docopt, as described in [nimble's developers
+info](https://github.com/nim-lang/nimble#dependencies).
+Most importantly, let's set the binary we want to create:
+
+```
+# Package
+
+version       = "0.1.0"
+author        = "The 'How I Start Nim' Team"
+description   = "A brainfuck interpreter"
+license       = "MIT"
+
+bin           = @["brainfuck"]
+
+# Dependencies
+
+requires "nim >= 0.17.3", "docopt >= 0.1.0"
 ```
 
 Since we have git installed already, we'll want to keep revisions of our source
@@ -301,7 +311,7 @@ often during development to get a feeling for how everything works.
 
 While programming Nim's [documentation](http://nim-lang.org/documentation.html)
 comes in handy. If you don't know where to find what yet, there's a
-[documentation index](http://nim-lang.org/theindex.html), in which you can
+[documentation index](https://nim-lang.org/docs/theindex.html), in which you can
 search.
 
 Let's start developing our interpreter by changing the `brainfuck.nim` file:
