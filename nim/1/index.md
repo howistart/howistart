@@ -27,12 +27,12 @@ primarily (C++, ObjectiveC and even JavaScript as well) and then uses the
 highly optimizing C compiler of your choice to generate the actual program. You
 get to benefit from the mature C ecosystem for free.
 
-If you opt for bootstrapping the [Nim compiler](https://github.com/Araq/Nim),
+If you opt for bootstrapping the [Nim compiler](https://github.com/nim-lang/Nim),
 which is written exclusively in Nim itself, you get to witness the compiler
 build itself with a few simple steps (in less than 2 minutes):
 
 ```bash
-$ git clone https://github.com/Araq/Nim
+$ git clone https://github.com/nim-lang/Nim
 $ cd Nim
 $ git clone --depth 1 https://github.com/nim-lang/csources
 $ cd csources && sh build.sh
@@ -64,8 +64,8 @@ path. If you use bash, this is what to do:
 $ echo 'export PATH=$PATH:$your_install_dir/bin' >> ~/.profile
 $ source ~/.profile
 $ nim
-Nim Compiler Version 0.10.2 (2014-12-29) [Linux: amd64]
-Copyright (c) 2006-2014 by Andreas Rumpf
+Nim Compiler Version 0.17.3 [Linux: amd64]
+Copyright (c) 2006-2017 by Andreas Rumpf
 ::
 
     nim command [options] [projectfile] [arguments]
@@ -73,24 +73,18 @@ Copyright (c) 2006-2014 by Andreas Rumpf
 Command:
   compile, c                compile project with default code generator (C)
   doc                       generate the documentation for inputfile
-  doc2                      generate the documentation for the whole project
-  i                         start Nim in interactive mode (limited)
 ...
 ```
 
 If `nim` reports its version and usage, we're good to continue. Now the modules
-from [Nim's standard library](http://nim-lang.org/lib.html) are just an import
+from [Nim's standard library](http://nim-lang.org/docs/lib.html) are just an import
 away. All other packages can be retrieved with
 [nimble](https://github.com/nim-lang/nimble), Nim's package manager. Let's
-follow the [simple installation
-instructions](https://github.com/nim-lang/nimble#nimble). Again, for Windows a
-[prebuilt archive](https://github.com/nim-lang/nimble/releases) is available,
-while building from source is quite comfortable as well:
+follow the [one-liner installation
+instructions](https://github.com/nim-lang/nimble#Installation):
 
 ```bash
-$ git clone https://github.com/nim-lang/nimble
-$ cd nimble
-$ nim c -r src/nimble install
+$ ./koch nimble
 ```
 
 Nimble's binary directory wants to be added to your path as well:
@@ -99,18 +93,18 @@ Nimble's binary directory wants to be added to your path as well:
 $ echo 'export PATH=$PATH:$HOME/.nimble/bin' >> ~/.profile
 $ source ~/.profile
 $ nimble update
-Downloading package list from https://github.com/nim-lang/packages/raw/master/packages.json
-Done.
+Downloading Official package list
+    Success Package list downloaded.
 ```
 
 Now we can browse the available [nimble
-packages](http://nim-lang.org/lib.html#nimble) or search for them on the
+packages](http://nim-lang.org/docs/lib.html#nimble) or search for them on the
 command line:
 
 ```
 $ nimble search docopt
 docopt:
-  url:         git://github.com/docopt/docopt.nim (git)
+  url:         https://github.com/docopt/docopt.nim (git)
   tags:        commandline, arguments, parsing, library
   description: Command-line args parser based on Usage message
   license:     MIT
@@ -123,7 +117,9 @@ we found, maybe we'll need it later:
 ```
 $ nimble install docopt
 ...
-docopt installed successfully.
+  Verifying dependencies for docopt@0.6.5
+ Installing docopt@0.6.5
+   Success: docopt installed successfully.
 ```
 
 Notice how quickly the library is installed (less than 1 second for me). This
@@ -131,7 +127,7 @@ is another nice effect of Nim. Basically the source code of the library is just
 downloaded, nothing resembling a shared library is compiled. Instead the
 library will simply be compiled statically into our program once we use it.
 
-There is [Nim editor support](https://github.com/Araq/Nim/wiki/Editor-Support)
+There is [Nim editor support](https://github.com/nim-lang/Nim/wiki/Editor-Support)
 for most of the popular editors out there, like Emacs
 ([nim-mode](https://github.com/reactormonk/nim-mode)), Vim
 ([nimrod.vim](https://github.com/zah/nimrod.vim/), my choice) and Sublime
@@ -207,38 +203,54 @@ To start a new project `nimble init` can generate a basic package config file:
 
 ```bash
 $ nimble init brainfuck
+      Info: In order to initialise a new Nimble package, I will need to ask you
+        ... some questions. Default values are shown in square brackets, press
+        ... enter to use them.
+    Prompt: Initial version of package? [0.2.0]
+    Answer: 
+    Prompt: Your name? [Dennis Felsing]
+    Answer: 
+    Prompt: Package description?
+    Answer: A brainfuck interpreter
+    Prompt: Package license? [MIT]
+    Answer: 
+    Prompt: Lowest supported Nim version? [0.17.3]
+    Answer: 0.10.0
+   Success: Nimble file created successfully
 ```
 The newly created `brainfuck.nimble` should look like this:
 
 ```
-[Package]
-name          = "brainfuck"
-version       = "0.1.0"
-author        = "Anonymous"
-description   = "New Nimble project for Nim"
-license       = "BSD"
+# Package
 
-[Deps]
-Requires: "nim >= 0.10.0"
-```
-
-Let's add the actual author, a description, as well as the requirement for
-docopt, as described in [nimble's developers
-info](https://github.com/nim-lang/nimble/blob/master/developers.markdown).
-Most importantly, let's set the binary we want to create:
-
-```
-[Package]
-name          = "brainfuck"
-version       = "0.1.0"
-author        = "The 'How I Start Nim' Team"
+version       = "0.2.0"
+author        = "Dennis Felsing"
 description   = "A brainfuck interpreter"
 license       = "MIT"
 
-bin           = "brainfuck"
+# Dependencies
 
-[Deps]
-Requires: "nim >= 0.10.0, docopt >= 0.1.0"
+requires "nim >= 0.10.0"
+```
+
+Let's add the requirement for docopt and the binary we want to create, as
+described in [nimble's "Creating Package"
+documentation](https://github.com/nim-lang/nimble/#creating-packages).
+
+```
+# Package
+
+version       = "0.2.0"
+author        = "Dennis Felsing"
+description   = "A brainfuck interpreter"
+license       = "MIT"
+
+bin           = @["brainfuck"]
+
+# Dependencies
+
+requires "nim >= 0.10.0"
+requires "docopt >= 0.1.0"
 ```
 
 Since we have git installed already, we'll want to keep revisions of our source
@@ -247,7 +259,7 @@ repository:
 
 ```bash
 $ git init
-$ git add hello.nim brainfuck.nimble .gitignore
+$ git add brainfuck.nim brainfuck.nimble .gitignore
 ```
 
 Where I just initialized the `.gitignore` file to this:
@@ -273,10 +285,10 @@ work:
 
 ```
 $ nimble build
-Looking for docopt (>= 0.1.0)...
-Dependency already satisfied.
-Building brainfuck/brainfuck using c backend...
-...
+  Verifying dependencies for brainfuck@0.2.0
+      Info: Dependency on docopt@>= 0.6.5 already satisfied
+  Verifying dependencies for docopt@0.6.5
+   Building brainfuck/brainfuck using c backend
 $ ./brainfuck
 Welcome to brainfuck
 ```
@@ -285,8 +297,12 @@ Welcome to brainfuck
 
 ```
 $ nimble install
-...
-brainfuck installed successfully.
+  Verifying dependencies for brainfuck@0.2.0
+      Info: Dependency on docopt@>= 0.6.5 already satisfied
+  Verifying dependencies for docopt@0.6.5
+ Installing brainfuck@0.2.0
+   Building brainfuck/brainfuck using c backend
+   Success: brainfuck installed successfully.
 $ brainfuck
 Welcome to brainfuck
 ```
@@ -301,7 +317,7 @@ often during development to get a feeling for how everything works.
 
 While programming Nim's [documentation](http://nim-lang.org/documentation.html)
 comes in handy. If you don't know where to find what yet, there's a
-[documentation index](http://nim-lang.org/theindex.html), in which you can
+[documentation index](http://nim-lang.org/docs/theindex.html), in which you can
 search.
 
 Let's start developing our interpreter by changing the `brainfuck.nim` file:
@@ -310,7 +326,7 @@ Let's start developing our interpreter by changing the `brainfuck.nim` file:
 import os
 ```
 
-First we import the [os module](http://nim-lang.org/os.html), so that we can
+First we import the [os module](http://nim-lang.org/docs/os.html), so that we can
 read command line arguments.
 
 ```nimrod
@@ -613,7 +629,7 @@ online](http://hookrace.net/nim-brainfuck/brainfuck.html) in its full glory.
 
 As I said before, our interpreter is still pretty slow for the mandelbrot
 program. Let's write a procedure that creates [Nim code
-AST](http://nim-lang.org/macros.html) at compile time instead:
+AST](http://nim-lang.org/docs/macros.html) at compile time instead:
 
 ```nimrod
 import macros
@@ -621,7 +637,7 @@ import macros
 proc compile(code: string): PNimrodNode {.compiletime.} =
   var stmts = @[newStmtList()]
 
-  template addStmt(text): stmt =
+  template addStmt(text): typed =
     stmts[stmts.high].add parseStmt(text)
 
   addStmt "var tape: array[1_000_000, char]"
@@ -721,12 +737,12 @@ out the AST of the code you want to generate.
 Macros can be used to insert the generated code into a program directly:
 
 ```nimrod
-macro compileString*(code: string): stmt =
+macro compileString*(code: string): typed =
   ## Compiles the brainfuck `code` string into Nim code that reads from stdin
   ## and writes to stdout.
   compile code.strval
 
-macro compileFile*(filename: string): stmt =
+macro compileFile*(filename: string): typed =
   ## Compiles the brainfuck code read from `filename` at compile time into Nim
   ## code that reads from stdin and writes to stdout.
   compile staticRead(filename.strval)
@@ -753,10 +769,10 @@ $ ./brainfuck
 
 By default Nim compiles its intermediate C code with GCC, but clang usually
 compiles faster and may even yield more efficient code. It's always worth a
-try. To compile once with clang, use `nim -d:release --cc:clang c hello`. If
-you want to keep compiling `hello.nim` with clang, create a `hello.nim.cfg`
-file with the content `cc = clang`. To change the default backend compiler,
-edit `config/nim.cfg` in Nim's directory.
+try. To compile once with clang, use `nim -d:release --cc:clang c brainfuck`. If
+you want to keep compiling `brainfuck.nim` with clang, create a
+`brainfuck.nim.cfg` file with the content `cc = clang`. To change the default
+backend compiler, edit `config/nim.cfg` in Nim's directory.
 
 While we're talking about changing default compiler options. The Nim compiler
 is quite talky at times, which can be disabled by setting `hints = off` in the
@@ -772,8 +788,8 @@ If you're not a fan of this, a simple `warning[SmallLshouldNotBeUsed] = off`
 suffices to make the compiler shut up.
 
 Another advantage of Nim is that we can use debuggers with C support, like GDB.
-Simply compile your program with `nim c --linedir:on --debuginfo c hello` and
-`gdb ./hello` can be used to debug your program.
+Simply compile your program with `nim c --linedir:on --debuginfo c brainfuck` and
+`gdb ./brainfuck` can be used to debug your program.
 
 ## Command line argument parsing
 
@@ -865,7 +881,7 @@ This also requires us to change the nimble file:
 
 ```
 srcDir = "src"
-bin    = "brainfuck"
+bin    = @["brainfuck"]
 ```
 
 To improve reusability of our code, we turn to refactoring it. The main concern
@@ -873,7 +889,7 @@ is that we always read from stdin and write to stdout.
 
 Instead of accepting just a `code: string` as its parameter, we extend the
 `interpret` procedure to also receive an input and output stream. This uses the
-[streams module](http://nim-lang.org/streams.html) that provides `FileStream`s
+[streams module](http://nim-lang.org/docs/streams.html) that provides `FileStream`s
 and `StringStream`s:
 
 ```nimrod
@@ -1010,7 +1026,7 @@ To connect the new `compile` procedure to a `compileFile` macro that uses
 stdout and stdin again, we can write:
 
 ```nimrod
-macro compileFile*(filename: string): stmt =
+macro compileFile*(filename: string): typed =
   compile(staticRead(filename.strval),
     "stdin.newFileStream", "stdout.newFileStream")
 ```
@@ -1018,7 +1034,7 @@ macro compileFile*(filename: string): stmt =
 To read from an input string and write back to an output string:
 
 ```nimrod
-macro compileFile*(filename: string; input, output: expr): stmt =
+macro compileFile*(filename: string; input, output: untyped): typed =
   result = compile(staticRead(filename.strval),
     "newStringStream(" & $input & ")", "newStringStream()")
   result.add parseStmt($output & " = outStream.data")
@@ -1058,7 +1074,7 @@ when isMainModule:
   doAssert align("1232", 6, '#') == "##1232"
 ```
 
-For a bigger project the [unittest module](http://nim-lang.org/unittest.html)
+For a bigger project the [unittest module](http://nim-lang.org/docs/unittest.html)
 comes in handy.
 
 We split up the tests into 3 files in the `tests/` directory:
@@ -1105,34 +1121,32 @@ instead of `examples/` with the interpreter. The reason for this is that the
 compiler's `staticRead` opens the files relative to the location of our file,
 which resides in `tests/`.
 
-To combine both tests we create a `tests/all.nim` that only imports and
-thereby automatically runs all available test suites:
-
-```nimrod
-import interpret, compile
-```
-
-For convenience we also create a `tests/nim.cfg` that sets some reasonable
-compiler options for testing and debugging:
-
-```cfg
-# $projectPath is tests/
-path = "$projectPath/../src"
-hints = off
-linedir = on
-debuginfo
-stacktrace = on
-linetrace = on
-```
-
-Finally, to compile and run our tests:
+To combine both tests we can simply run `nimble test`, which automatically builds and executes the source files in the `tests` directory:
 
 ```
-$ nim c -r tests/all
-[OK] interpret helloworld
-[OK] interpret rot13
-[OK] compile helloworld
-[OK] compile rot13
+$ nimble test
+  Executing task test in /home/d067158/git/nim-brainfuck/brainfuck.nimble
+  Verifying dependencies for brainfuck@1.1
+      Info: Dependency on docopt@>= 0.1.0 already satisfied
+  Verifying dependencies for docopt@0.6.5
+  Compiling /home/d067158/git/nim-brainfuck/tests/compile.nim (from package brainfuck) using c backend
+Hint: used config file '/media/nim/config/nim.cfg' [Conf]
+
+[Suite] brainfuck compiler
+  [OK] compile helloworld
+  [OK] compile rot13
+   Success: Execution finished
+  Verifying dependencies for brainfuck@1.1
+      Info: Dependency on docopt@>= 0.1.0 already satisfied
+  Verifying dependencies for docopt@0.6.5
+  Compiling /home/d067158/git/nim-brainfuck/tests/interpret.nim (from package brainfuck) using c backend
+Hint: used config file '/media/nim/config/nim.cfg' [Conf]
+
+[Suite] brainfuck interpreter
+  [OK] interpret helloworld
+  [OK] interpret rot13
+   Success: Execution finished
+   Success: All tests passed
 ```
 
 Great success, our library works! With this we have a fully fledged library,
@@ -1142,7 +1156,7 @@ Time to publish [everything on
 Github](https://github.com/def-/nim-brainfuck) and submit a pull request to
 have `brainfuck` included in the [nimble
 packages](https://github.com/nim-lang/packages). Once the package is accepted
-you can find it in the [official list](http://nim-lang.org/lib.html#nimble) and
+you can find it in the [official list](http://nim-lang.org/docs/lib.html#nimble) and
 use nimble to search for it and install it:
 
 ```
@@ -1165,39 +1179,40 @@ teach it how to bootstrap the compiler:
 
 ```markdown
 dependencies:
-  pre:
+  override:
     - |
         if [ ! -x ~/nim/bin/nim ]; then
-          git clone -b devel --depth 1 git://github.com/araq/nim ~/nim/
-          git clone -b devel --depth 1 git://github.com/nim-lang/csources ~/nim/csources/
+          git clone -b devel --depth 1 https://github.com/nim-lang/Nim ~/nim/
+          git clone --depth 1 https://github.com/nim-lang/csources ~/nim/csources/
           cd ~/nim/csources; sh build.sh; cd ..; rm -rf csources
-          bin/nim c koch; ./koch boot -d:release
           ln -fs ~/nim/bin/nim ~/bin/nim
+          bin/nim c koch; ./koch boot -d:release; ./koch nimble
+          ln -fs ~/nim/bin/nimble ~/bin/nimble
         else
           cd ~/nim; git fetch origin
-          git merge FETCH_HEAD | grep "Already up-to-date" || (bin/nim c koch; ./koch boot -d:release)
+          git merge FETCH_HEAD | grep "Already up-to-date" || (bin/nim c koch; ./koch boot -d:release; ./koch nimble)
         fi
 
   cache_directories:
     - "~/bin/"
     - "~/nim/"
+    - "~/.nimble/"
+
+compile:
+  override:
+    - nimble build -y
 ```
 
 This automatically keeps the compiler up to date. If you want to use the most
 recently released version of Nim instead of the development build, use the
-`master` branch instead of `devel` in the two `git clone` calls. Running the
+`master` branch instead of `devel` in the `git clone` call. Running the
 tests is straightfoward now:
 
 ```markdown
 test:
   override:
-    - nim c -r tests/all
+    - nimble test -y
 ```
-
-If your project just needs to compile and run `tests/all`, then you can drop in
-[this circle.yml](https://github.com/def-/nim-brainfuck/blob/master/circle.yml)
-directly. Otherwise, the `test:` section is the only part you will need to
-change.
 
 The build status badge [![Build
 Status](https://circleci.com/gh/def-/nim-brainfuck.png)](https://circleci.com/gh/def-/nim-brainfuck)
@@ -1224,7 +1239,7 @@ and have an [extensive collection of small
 programs](https://github.com/def-/nim-unsorted).
 
 If you're interested in a more traditional start into Nim, the [official
-tutorial](http://nim-lang.org/tut1.html) and [Nim by
+tutorial](http://nim-lang.org/docs/tut1.html) and [Nim by
 Example](https://nim-by-example.github.io/) can guide you.
 
 The [Nim community](http://nim-lang.org/community.html) is very welcoming and
