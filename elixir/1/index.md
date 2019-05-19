@@ -377,8 +377,8 @@ defimpl Inspect, for: Portal do
 
     """
     #Portal<
-      #{String.rjust(left_door, max)} <=> #{right_door}
-      #{String.rjust(left_data, max)} <=> #{right_data}
+      #{String.pad_leading(left_door, max)} <=> #{right_door}
+      #{String.pad_leading(left_data, max)} <=> #{right_data}
     >
     """
   end
