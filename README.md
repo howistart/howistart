@@ -1,3 +1,6 @@
+
+**Content and site are now at [https://github.com/howistart/howistart.org](https://github.com/howistart/howistart.org)**
+
 # Articles for [How I Start](http://howistart.org/)
 
 How I Start is a mix between a collection of development tutorials and [The Setup](http://usesthis.com/). The purpose is to both fill a gap in tutorials and give a peek at how some of the top developers do their work.
